@@ -1,0 +1,117 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "PACOM.WebApp",
+    "version": "1.0"
+  },
+  "paths": {
+    "/API": {
+      "get": {
+        "tags": [
+          "API"
+        ],
+        "parameters": [
+          {
+            "name": "OrganizationCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/API/{name}": {
+      "get": {
+        "tags": [
+          "API"
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/API/EventLog": {
+      "post": {
+        "tags": [
+          "API"
+        ],
+        "parameters": [
+          {
+            "name": "OrganizationCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/API/List User": {
+      "get": {
+        "tags": [
+          "API"
+        ],
+        "parameters": [
+          {
+            "name": "OrganizationCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/API2/{name}": {
+      "get": {
+        "tags": [
+          "API2"
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": { }
+}

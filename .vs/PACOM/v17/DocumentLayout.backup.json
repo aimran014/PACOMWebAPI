@@ -1,0 +1,80 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Lenovo Z50\\source\\repos\\PACOMWebAPI\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{968D3A47-8D2B-408C-B5DE-F5FC967D1EB8}|PACOM.WebApp\\PACOM.WebApp.csproj|c:\\users\\lenovo z50\\source\\repos\\pacomwebapi\\pacom.webapp\\apicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{968D3A47-8D2B-408C-B5DE-F5FC967D1EB8}|PACOM.WebApp\\PACOM.WebApp.csproj|solutionrelative:pacom.webapp\\apicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{968D3A47-8D2B-408C-B5DE-F5FC967D1EB8}|PACOM.WebApp\\PACOM.WebApp.csproj|c:\\users\\lenovo z50\\source\\repos\\pacomwebapi\\pacom.webapp\\api2controller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{968D3A47-8D2B-408C-B5DE-F5FC967D1EB8}|PACOM.WebApp\\PACOM.WebApp.csproj|solutionrelative:pacom.webapp\\api2controller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 4,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{3fd5e0cc-709a-4f8c-94c3-7f0f8dff5bb2}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "APIController.cs",
+              "DocumentMoniker": "C:\\Users\\Lenovo Z50\\source\\repos\\PACOMWebAPI\\PACOM.WebApp\\APIController.cs",
+              "RelativeDocumentMoniker": "PACOM.WebApp\\APIController.cs",
+              "ToolTip": "C:\\Users\\Lenovo Z50\\source\\repos\\PACOMWebAPI\\PACOM.WebApp\\APIController.cs",
+              "RelativeToolTip": "PACOM.WebApp\\APIController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-31T04:59:01.058Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "API2Controller.cs",
+              "DocumentMoniker": "C:\\Users\\Lenovo Z50\\source\\repos\\PACOMWebAPI\\PACOM.WebApp\\API2Controller.cs",
+              "RelativeDocumentMoniker": "PACOM.WebApp\\API2Controller.cs",
+              "ToolTip": "C:\\Users\\Lenovo Z50\\source\\repos\\PACOMWebAPI\\PACOM.WebApp\\API2Controller.cs",
+              "RelativeToolTip": "PACOM.WebApp\\API2Controller.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-31T04:58:58.48Z",
+              "EditorCaption": ""
+            }
+          ]
+        },
+        {
+          "DockedWidth": 216,
+          "SelectedChildIndex": -1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{004be353-6879-467c-9d1e-9ac23cdf6d49}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

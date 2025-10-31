@@ -1,0 +1,44 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Admin API",
+    "version": "v2"
+  },
+  "paths": {
+    "/api/API": {
+      "get": {
+        "tags": [
+          "API"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/API/{name}": {
+      "get": {
+        "tags": [
+          "API"
+        ],
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": { }
+}

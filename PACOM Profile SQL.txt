@@ -1,0 +1,24 @@
+select * from [Organisations]
+
+select * from [ObjectMetadata] where [Name] like '%SPG.Users.User%'
+
+select * from [Sites]
+
+-- Cardholder --
+select o.Name AS OrganizationName, o.Description AS OrganizationDescription, u.Id, u.Username, u.Email, u.FirstName, u.LastName, u.CustomData
+from [User] u
+left join [Organisations] o on u.Scope = o.Scope and o.IsDeleted = 0
+
+
+-- Event Log --
+SELECT l.Id, l.Scope, s.Name AS ScopeName, EventId, e.FullName AS EventName,
+l.UserId, u.FirstName AS UserName, CredentialId, c.CardNumber AS CredentialNumber, [Value], AreaFromId, AreaToId, CustomDataString, 
+CAST([time] AT TIME ZONE 'UTC' AT TIME ZONE 'Singapore Standard Time' AS DATETIME2) AS MalaysiaTime
+FROM [ArcoDbStatusView].[dbo].[ActivityLog] l
+LEFT JOIN [ArcoDbView].[dbo].[Sites] s ON l.Scope = s.Scope AND s.IsDeleted = 0
+LEFT JOIN [ArcoDbView].[dbo].[SchemaEvents] e ON l.EventId = e.Id
+LEFT JOIN [ArcoDbView].[dbo].[User] u ON l.UserId = u.Id
+LEFT JOIN [ArcoDbView].[dbo].[Credentials] c ON l.CredentialId = c.Id
+ORDER BY [Time] desc
+
+
