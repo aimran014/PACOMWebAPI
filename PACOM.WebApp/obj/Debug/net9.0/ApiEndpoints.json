@@ -1,54 +1,6 @@
 [
   {
     "ContainingType": "PACOM.WebApp.APIController",
-    "Method": "Get",
-    "RelativePath": "API",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "OrganizationCode",
-        "Type": "System.String",
-        "IsRequired": false
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "PACOM.WebApp.APIController",
-    "Method": "GetByName",
-    "RelativePath": "API/{name}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "name",
-        "Type": "System.String",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "PACOM.WebApp.API2Controller",
-    "Method": "GetByName",
-    "RelativePath": "api/API2/{name}",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "name",
-        "Type": "System.String",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "PACOM.WebApp.APIController",
     "Method": "EventLog",
     "RelativePath": "API/EventLog",
     "HttpMethod": "POST",
@@ -58,6 +10,16 @@
       {
         "Name": "OrganizationCode",
         "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "StartDate",
+        "Type": "System.DateTime",
+        "IsRequired": false
+      },
+      {
+        "Name": "EndDate",
+        "Type": "System.DateTime",
         "IsRequired": false
       }
     ],
@@ -75,6 +37,32 @@
         "Name": "OrganizationCode",
         "Type": "System.String",
         "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PACOM.WebApp.APIController",
+    "Method": "ReceiveWebhook",
+    "RelativePath": "API/receive",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PACOM.WebApp.APIController",
+    "Method": "UpdateSettings",
+    "RelativePath": "API/WebhookSender",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "newSettings",
+        "Type": "PACOM.WebApp.Model.WebhookSettings",
+        "IsRequired": true
       }
     ],
     "ReturnTypes": []

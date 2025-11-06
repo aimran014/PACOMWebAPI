@@ -5,49 +5,6 @@
     "version": "1.0"
   },
   "paths": {
-    "/API": {
-      "get": {
-        "tags": [
-          "API"
-        ],
-        "parameters": [
-          {
-            "name": "OrganizationCode",
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
-    "/API/{name}": {
-      "get": {
-        "tags": [
-          "API"
-        ],
-        "parameters": [
-          {
-            "name": "name",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
-    },
     "/API/EventLog": {
       "post": {
         "tags": [
@@ -59,6 +16,22 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "StartDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "EndDate",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
             }
           }
         ],
@@ -90,21 +63,42 @@
         }
       }
     },
-    "/api/API2/{name}": {
-      "get": {
+    "/API/receive": {
+      "post": {
         "tags": [
-          "API2"
+          "API"
         ],
-        "parameters": [
-          {
-            "name": "name",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/API/WebhookSender": {
+      "post": {
+        "tags": [
+          "API"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookSettings"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookSettings"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/WebhookSettings"
+              }
             }
           }
-        ],
+        },
         "responses": {
           "200": {
             "description": "OK"
@@ -113,5 +107,29 @@
       }
     }
   },
-  "components": { }
+  "components": {
+    "schemas": {
+      "WebhookSettings": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "webhookLink": {
+            "type": "string",
+            "nullable": true
+          },
+          "checkIntervalSeconds": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "organizationCode": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
 }
