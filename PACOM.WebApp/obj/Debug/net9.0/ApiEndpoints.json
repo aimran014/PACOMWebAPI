@@ -43,9 +43,25 @@
   },
   {
     "ContainingType": "PACOM.WebApp.APIController",
-    "Method": "ReceiveWebhook",
-    "RelativePath": "API/receive",
+    "Method": "AddUpdateOrganization",
+    "RelativePath": "API/ManageOrganization",
     "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "organization",
+        "Type": "PACOM.WebApp.Data.Organization",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "PACOM.WebApp.APIController",
+    "Method": "GetOrganization",
+    "RelativePath": "API/organizations",
+    "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [],
@@ -53,18 +69,12 @@
   },
   {
     "ContainingType": "PACOM.WebApp.APIController",
-    "Method": "UpdateSettings",
-    "RelativePath": "API/WebhookSender",
+    "Method": "ReceiveWebhook",
+    "RelativePath": "API/receive",
     "HttpMethod": "POST",
     "IsController": true,
     "Order": 0,
-    "Parameters": [
-      {
-        "Name": "newSettings",
-        "Type": "PACOM.WebApp.Model.WebhookSettings",
-        "IsRequired": true
-      }
-    ],
+    "Parameters": [],
     "ReturnTypes": []
   }
 ]

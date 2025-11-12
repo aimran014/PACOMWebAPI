@@ -1,4 +1,6 @@
-﻿using PACOM.WebApp.Components;
+﻿using Microsoft.EntityFrameworkCore;
+using PACOM.WebApp.Components;
+using PACOM.WebApp.Data;
 using PACOM.WebApp.Model;
 using PACOM.WebApp.Service;
 
@@ -7,6 +9,14 @@ var builder = WebApplication.CreateBuilder(args);
 // ✅ Initialize the static DatasourcesService
 DatasourcesService.Initialize(builder.Configuration);
 DatasourcesHelper.Initialize(builder.Configuration);
+
+
+// Register DbContext
+builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<DatasourcesService>();
+
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

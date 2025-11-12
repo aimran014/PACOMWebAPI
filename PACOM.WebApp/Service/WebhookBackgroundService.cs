@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
+using PACOM.WebApp.Data;
 using PACOM.WebApp.Model;
 using PACOM.WebApp.Models;
 using System.Net.Http;
@@ -15,14 +16,17 @@ namespace PACOM.WebApp.Service
         private readonly WebhookSettings _settings;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly string? _connectionString;
+        private readonly IServiceScopeFactory _scopeFactory;
 
         public WebhookBackgroundService(IOptions<WebhookSettings> settings,
                                         IHttpClientFactory httpClientFactory,
-                                        IConfiguration config)
+                                        IConfiguration config,
+                                        IServiceScopeFactory scopeFactory)
         {
             _settings = settings.Value;
             _httpClientFactory = httpClientFactory;
             _connectionString = config.GetConnectionString("DefaultConnection");
+            _scopeFactory = scopeFactory;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -31,49 +35,99 @@ namespace PACOM.WebApp.Service
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                if (!_settings.Enabled)
-                {
-                    Console.WriteLine("⚙️ Webhook sending disabled — sleeping...");
-                    await Task.Delay(_settings.CheckIntervalSeconds * 1000, stoppingToken);
-                    continue;
-                }
-
-
-                if (!await IsWebhookUrlValid(_settings.WebhookLink))
-                {
-                    Console.WriteLine("🚫 Webhook URL invalid or unreachable — sleeping...");
-                    await Task.Delay(_settings.CheckIntervalSeconds * 1000, stoppingToken);
-                    continue;
-                }
-
-                await ProcessUnsentRecords(stoppingToken);
+                await ProcessCurrentRecords(stoppingToken);
 
                 await Task.Delay(_settings.CheckIntervalSeconds * 1000, stoppingToken);
             }
         }
 
-        private async Task ProcessUnsentRecords(CancellationToken token)
+        private async Task ProcessCurrentRecords(CancellationToken token)
         {
             try
             {
-                EventLogModel? LatestRecords = DatasourcesService.GetLatestEvent(_settings.OrganizationCode).Data;
+                using var scope = _scopeFactory.CreateScope();
+                var _datasourcesService = scope.ServiceProvider.GetRequiredService<DatasourcesService>();
 
-                List<EventLogModel> UnsentEvent = DatasourcesService.GetEvent(_settings.OrganizationCode, LatestRecords.MalaysiaTime, DateTime.Now).Data.AsList();
+                // Get the latest processed record from PACOM by Version
+                EventLogModel? latestResponse = DatasourcesService.GetLatestPacomEvent().Data;
 
-                if (!UnsentEvent.Any())
+                // Get last processed ActivityEvent by Version.
+                ActivityEvent? lastProcess = _datasourcesService.LastActivityEventAsync().Result.Data;
+
+                string LastPrcoessVersion = string.Empty;
+
+                if (lastProcess == null)
                 {
-                    Console.WriteLine("🔍 No new unsent records.");
+                    EventLogModel? FirstRecordPACOM = DatasourcesService.GetFirstPacomEvent().Data;
+                    if (FirstRecordPACOM == null)
+                    {
+                        //Console.WriteLine("🔍 No records in PACOM to process.");
+                        return;
+                    }
+                    else
+                    {
+                        LastPrcoessVersion = FirstRecordPACOM.Version;
+                    }
+                }
+                else
+                {
+                    LastPrcoessVersion = lastProcess.Version;
+                }
+
+
+                // Fetch unsent records from PACOM.DBO.EventLogModel table
+                List<EventLogModel> unsentRecords = DatasourcesService.GetEventByVersion(LastPrcoessVersion, latestResponse.Version).Data.AsList();
+
+                if (!unsentRecords.Any())
+                {
+                    //Resent failed record
+                    await ResentFailedRecords();
+
+                    //Console.WriteLine("🔍 No new unsent records.");
                     return;
                 }
 
-                foreach (var record in UnsentEvent)
+                // Map EventLogModel to ActivityEvent
+                List<ActivityEvent> log = unsentRecords.Select(r => new ActivityEvent
                 {
-                    bool sent = await SendWebhookAsync(record);
-                    if (sent)
+                    Version = r.Version,
+                    Id = r.Id,
+                    Scope = r.Scope,
+                    ScopeName = r.ScopeName,
+                    Organization = r.OrganizationName,
+                    EventId = r.EventId,
+                    EventName = r.EventName,
+                    UserId = r.UserId,
+                    UserName = r.UserName,
+                    FirstName = r.FirstName,
+                    LastName = r.LastName,
+                    CredentialId = r.CredentialId,
+                    CredentialNumber = r.CredentialNumber,
+                    Value = r.Value,
+                    AreaFromId = r.AreaFromId,
+                    AreaToId = r.AreaToId,
+                    CustomDataUDF = r.CustomDataUDF,
+                    CustomDataString = r.CustomDataString,
+                    UtcTime = r.UtcTime,
+                    ReaderName = r.ReaderName,
+                    CustomDataEventType = JsonSerializer.Serialize(r.CustomDataEventType),
+                    CustomDataUDFType = JsonSerializer.Serialize(r.CustomDataUDFType),
+                    MykadNumber = r.MykadNumber,
+                    IsProcessed = false
+                }).ToList();
+
+                // direct save without sent webhook when return failed.
+                if (!await ManageWebhookOrganization(log))
+                {
+                    foreach (var record in log)
                     {
-                        Console.WriteLine($"✅ Sent record ID {record.Id}");
+                        var result = _datasourcesService.StoreActivityEventAsync(record);
                     }
+
                 }
+
+                //Resent failed record
+                await ResentFailedRecords();
 
             }
             catch (Exception ex)
@@ -82,14 +136,87 @@ namespace PACOM.WebApp.Service
             }
         }
 
-        private async Task<bool> SendWebhookAsync(EventLogModel record)
+        private async Task ResentFailedRecords()
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var _datasourcesService = scope.ServiceProvider.GetRequiredService<DatasourcesService>();
+
+            // Fetch unsent records from PACOM.DBO.EventLogModel table
+            List<ActivityEvent> FailedSendRecords = _datasourcesService.GetUnprocessEventAsync().Result.Data.AsList();
+
+            if (!FailedSendRecords.Any())
+            {
+                //Console.WriteLine("🔍 No new unsent records.");
+                return;
+            }
+
+            await ManageWebhookOrganization(FailedSendRecords);
+        }
+
+        private async Task<bool> ManageWebhookOrganization(List<ActivityEvent> log)
+        {
+            try
+            {
+                using var scope = _scopeFactory.CreateScope();
+                var _datasourcesService = scope.ServiceProvider.GetRequiredService<DatasourcesService>();
+
+                // Get all organizations registered for webhooks
+                List<Organization>? organizations = _datasourcesService.ListOrganizationAsync().Result.Data;
+
+                if (organizations == null || !organizations.Any())
+                {
+                    //Console.WriteLine($"ℹ️ No records for organization.");
+                    return false;
+                }
+
+                foreach (var site in organizations)
+                {
+                    // Filter records for the current organization
+                    var siteRecords = log.Where(r => r.Organization == site.Name).ToList();
+
+                    if (!siteRecords.Any())
+                    {
+                        //Console.WriteLine($"ℹ️ No records for organization {site.Name}.");
+                        continue;
+                    }
+
+                    foreach (var record in siteRecords)
+                    {
+                        // Send webhook if organization is active and URL is valid
+                        if (site.IsActive == true)
+                        {
+                            bool sent = await SendWebhookAsync(record, site);
+                            if (sent)
+                            {
+                                record.IsProcessed = true;
+                                //Console.WriteLine($"✅ Sent record ID {record.Id}");
+                            }
+
+                            // Store & update record event only active webhook
+                            var results = _datasourcesService.StoreActivityEventAsync(record);
+
+                        }
+                    }
+
+                }
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"⚠️ Attempt error: {ex.Message}");
+                return false;
+            }
+        }
+
+        private async Task<bool> SendWebhookAsync(ActivityEvent record, Organization organization)
         {
             var client = _httpClientFactory.CreateClient();
             var json = JsonSerializer.Serialize(record);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
             try
             {
-                var response = await client.PostAsync(_settings.WebhookLink, content);
+                var response = await client.PostAsync(organization.url, content);
                 if (response.IsSuccessStatusCode)
                 {
                     return true;

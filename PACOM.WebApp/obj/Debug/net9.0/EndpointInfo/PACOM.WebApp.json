@@ -5,6 +5,49 @@
     "version": "1.0"
   },
   "paths": {
+    "/API/ManageOrganization": {
+      "post": {
+        "tags": [
+          "API"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Organization"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Organization"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Organization"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/API/organizations": {
+      "get": {
+        "tags": [
+          "API"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/API/EventLog": {
       "post": {
         "tags": [
@@ -74,58 +117,51 @@
           }
         }
       }
-    },
-    "/API/WebhookSender": {
-      "post": {
-        "tags": [
-          "API"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/WebhookSettings"
-              }
-            },
-            "text/json": {
-              "schema": {
-                "$ref": "#/components/schemas/WebhookSettings"
-              }
-            },
-            "application/*+json": {
-              "schema": {
-                "$ref": "#/components/schemas/WebhookSettings"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
     }
   },
   "components": {
     "schemas": {
-      "WebhookSettings": {
+      "Organization": {
+        "required": [
+          "code",
+          "name"
+        ],
         "type": "object",
         "properties": {
-          "enabled": {
-            "type": "boolean"
-          },
-          "webhookLink": {
-            "type": "string",
-            "nullable": true
-          },
-          "checkIntervalSeconds": {
+          "id": {
             "type": "integer",
             "format": "int32"
           },
-          "organizationCode": {
+          "name": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "code": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "description": {
             "type": "string",
             "nullable": true
+          },
+          "isActive": {
+            "type": "boolean"
+          },
+          "token": {
+            "type": "string",
+            "nullable": true
+          },
+          "url": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
           }
         },
         "additionalProperties": false

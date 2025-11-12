@@ -35,9 +35,9 @@ namespace PACOM.WebApp.Service
             using var connection = new SqlConnection(_masterConnectionString);
             await connection.OpenAsync();
 
-            string checkTableQuery = @"IF OBJECT_ID('dbo.TblReceiver', 'U') IS NULL
+            string checkTableQuery = @"IF OBJECT_ID('Webhook_db.dbo.TblReceiver', 'U') IS NULL
                                         BEGIN
-                                            CREATE TABLE dbo.TblReceiver (
+                                            CREATE TABLE Webhook_db.dbo.TblReceiver (
                                                 Id INT IDENTITY(1,1) PRIMARY KEY,
                                                 data NVARCHAR(MAX) NULL,
                                                 CreatedAt DATETIME DEFAULT(GETDATE())

@@ -10,9 +10,11 @@ namespace PACOM.WebApp.Models
 {
     public class EventLogModel
     {
+        public string Version { get; set; } = string.Empty;
         public string Id { get; set; } = string.Empty;
         public string Scope { get; set; } = string.Empty;
         public string? ScopeName { get; set; }
+        public string? OrganizationName { get; set; }
         public string? EventId { get; set; }
         public string? EventName { get; set; }
         public string? UserId { get; set; }
@@ -26,7 +28,7 @@ namespace PACOM.WebApp.Models
         public string? AreaToId { get; set; }
         public string CustomDataUDF { get; set; } = string.Empty;
         public string CustomDataString { get; set; } = string.Empty;
-        public DateTime MalaysiaTime { get; set; }
+        public DateTime UtcTime { get; set; }
         public string ReaderName
         {
             get
@@ -53,6 +55,23 @@ namespace PACOM.WebApp.Models
                 return string.Empty;
             }
         }
+
+        public string MykadNumber
+        {
+            get
+            {
+                if (string.IsNullOrWhiteSpace(CustomDataUDF))
+                    return string.Empty;
+
+                var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(CustomDataUDF);
+                if (dict == null)
+                    return string.Empty;
+
+                const string mykadKey = "7c18b5f2-e234-4ab0-a57d-6803910e6683"; // MyKad key
+                return dict.TryGetValue(mykadKey, out string value) ? value : string.Empty;
+            }
+        }
+
 
         // 🆕 Add this property:
         [JsonIgnore] // to prevent double serialization if you return it as JSON later
