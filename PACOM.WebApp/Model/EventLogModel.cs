@@ -29,6 +29,15 @@ namespace PACOM.WebApp.Models
         public string CustomDataUDF { get; set; } = string.Empty;
         public string CustomDataString { get; set; } = string.Empty;
         public DateTime UtcTime { get; set; }
+        public DateTime LocalTime
+        { 
+            get
+            {
+                // Malaysia time zone (same as Singapore)
+                var tz = TimeZoneInfo.FindSystemTimeZoneById("Singapore Standard Time");
+                return TimeZoneInfo.ConvertTimeFromUtc(UtcTime, tz);
+            }
+        }
         public string ReaderName
         {
             get

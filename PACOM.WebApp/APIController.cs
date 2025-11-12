@@ -73,15 +73,22 @@ namespace PACOM.WebApp
 
 
         [HttpPost("EventLog")]
-        public IActionResult EventLog( string OrganizationCode, DateTime StartDate, DateTime EndDate)
+        public IActionResult PacomEventLog( string OrganizationCode, DateTime StartDate, DateTime EndDate)
         {
-            var result = DatasourcesService.GetEvent(StartDate, EndDate, OrganizationCode);
+            // Define Malaysia time zone (same as Singapore)
+            var malaysiaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Singapore Standard Time");
+
+            // Convert the received local times to UTC
+            DateTime startUtc = TimeZoneInfo.ConvertTimeToUtc(StartDate, malaysiaTimeZone);
+            DateTime endUtc = TimeZoneInfo.ConvertTimeToUtc(EndDate, malaysiaTimeZone);
+
+            var result = DatasourcesService.GetEvent(startUtc, endUtc, OrganizationCode);
             return Ok(result);
         }
 
 
         [HttpGet("List User")]
-        public IActionResult ListUser( string OrganizationCode)
+        public IActionResult PacomListUser( string OrganizationCode)
         {
             var result = DatasourcesService.ListAllUsers(OrganizationCode);
             return Ok(result);
