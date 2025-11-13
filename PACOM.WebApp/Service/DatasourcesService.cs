@@ -321,6 +321,22 @@ namespace PACOM.WebApp.Service
             return result;
         }
 
+        public static PacomResponse<List<string>> ListPacomOrganization()
+        {
+            var result = new PacomResponse<List<string>>();
+            using (var conn = new SqlConnection(_connectionString))
+            {
+                conn.Open();
+                string query = @"SELECT Name FROM [ArcoDbView].[dbo].[Organisations] WHERE IsDeleted = 0";
+                var data = conn.Query<string>(query).AsList();
+                result.Error = 0;
+                result.Message = "Organizations retrieved successfully.";
+                result.Data = data;
+                conn.Close();
+            }
+            return result;
+        }
+
 
 
         public async Task<PacomResponse<Organization>> ManageOrganizationAsync(Organization organization)

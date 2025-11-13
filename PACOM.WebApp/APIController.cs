@@ -72,6 +72,14 @@ namespace PACOM.WebApp
         }
 
 
+        [HttpGet("ListPacomOrganization")]
+        public IActionResult PacomListOrganization()
+        {
+            var result = DatasourcesService.ListPacomOrganization();
+            return Ok(result);
+        }
+
+
         [HttpPost("EventLog")]
         public IActionResult PacomEventLog( string OrganizationCode, DateTime StartDate, DateTime EndDate)
         {
@@ -87,11 +95,30 @@ namespace PACOM.WebApp
         }
 
 
-        [HttpGet("List User")]
-        public IActionResult PacomListUser( string OrganizationCode)
+        [HttpPost("Webhhok")]
+        public async Task<IActionResult> PacomWebhook( string OrganizationCode, bool Actived, string WebhookUrl)
         {
-            var result = DatasourcesService.ListAllUsers(OrganizationCode);
-            return Ok(result);
+            var Tenant = await _datasourcesService.ListOrganizationAsync();
+
+            if (!Tenant.Data!.Any(x => x.Code == OrganizationCode))
+                return BadRequest(new { Message = "Invalid organization data." });
+
+            var org = new Organization
+            {
+                Code = OrganizationCode,
+                IsActive = Actived,
+                Name = Tenant.Data.First(x => x.Code == OrganizationCode).Name,
+                Description = Tenant.Data.First(x => x.Code == OrganizationCode).Description,
+                url = WebhookUrl
+
+            };
+
+            var result = await _datasourcesService.ManageOrganizationAsync(org);
+
+            if (result.Error == 0)
+                return Ok(result);
+            else
+                return StatusCode(500, result);
         }
 
 
@@ -122,16 +149,11 @@ namespace PACOM.WebApp
                     Trx_Type = 0
                 };
 
-                // Save record into SQL
-                //await DatasourcesService.SaveWebhookToDatabase(body);
 
                 if (!string.IsNullOrWhiteSpace(acstrx.BadgeNo))
                 {
                     await DatasourcesService.SaveWebhookInTAMS(acstrx);
                 }
-
-                //Console.WriteLine("📩 Webhook received and saved:");
-                //Console.WriteLine(body);
 
                 return Ok(new { status = "Saved successfully" });
             }
