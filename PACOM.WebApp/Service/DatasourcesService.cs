@@ -31,19 +31,19 @@ namespace PACOM.WebApp.Service
             _connectionString = config.GetConnectionString("DefaultConnection");
         }
 
-        public static async Task SaveWebhookToDatabase(string raw)
-        {
-            // Ensure database and table exist
-            await DatasourcesHelper.EnsureDatabaseAndTableAsync();
+        //public static async Task SaveWebhookToDatabase(string raw)
+        //{
+        //    // Ensure database and table exist
+        //    await DatasourcesHelper.EnsureDatabaseAndTableAsync();
 
-            using var connection = new SqlConnection(_connectionString);
+        //    using var connection = new SqlConnection(_connectionString);
 
-            string query = @"
-                INSERT INTO Webhook_db.dbo.TblReceiver (data)
-                VALUES (@data)";
+        //    string query = @"
+        //        INSERT INTO Webhook_db.dbo.TblReceiver (data)
+        //        VALUES (@data)";
 
-            await connection.ExecuteAsync(query, new { data = raw });
-        }
+        //    await connection.ExecuteAsync(query, new { data = raw });
+        //}
 
         public static async Task SaveWebhookInTAMS(AcstrxModel TAMS)
         {
