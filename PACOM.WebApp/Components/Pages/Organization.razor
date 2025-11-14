@@ -1,0 +1,162 @@
+﻿@page "/organizations"
+@using PACOM.WebApp.Service
+@using PACOM.WebApp.Data
+@using PACOM.WebApp.Models
+@using System.Collections.Generic
+@inject DatasourcesService OrgService
+@rendermode InteractiveServer
+
+<h3>Organizations</h3>
+
+<button class="btn btn-primary mb-3" @onclick="AddNew">Add New</button>
+
+
+@if (organizations == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Code</th>
+                <th>Description</th>
+                <th>Active</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var org in organizations)
+            {
+                <tr>
+                    <td>@org.Id</td>
+                    <td>@org.Name</td>
+                    <td>@org.Code</td>
+                    <td>@org.Description</td>
+                    <td>@org.url</td>
+                    <td>@(org.IsActive ? "Yes" : "No")</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning me-1" @onclick="() => EditOrg(org)">Edit</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteOrg(org.Id)">Delete</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (showDialog)
+{
+    <div class="drawer @(showDialog ? "show" : "")">
+        <div class="drawer-header">
+            <h4>@(selectedOrg.Id == 0 ? "Add Organization" : "Edit Organization")</h4>
+            <button class="btn btn-sm btn-secondary" @onclick="CloseDialog">X</button>
+        </div>
+
+        <EditForm Model="selectedOrg" OnValidSubmit="SaveOrg">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-2">
+                <label>Name</label>
+                <InputText class="form-control" @bind-Value="selectedOrg.Name" />
+            </div>
+
+            <div class="mb-2">
+                <label>Code</label>
+                <InputText class="form-control" @bind-Value="selectedOrg.Code" />
+            </div>
+
+            <div class="mb-2">
+                <label>Description</label>
+                <InputText class="form-control" @bind-Value="selectedOrg.Description" />
+            </div>
+
+            <div class="mb-2">
+                <label>Webhook Link</label>
+                <InputText class="form-control" @bind-Value="selectedOrg.url" />
+            </div>
+
+            <div class="mb-2 form-check">
+                <InputCheckbox class="form-check-input" @bind-Value="selectedOrg.IsActive" />
+                <label class="form-check-label">Active</label>
+            </div>
+
+            <button type="submit" class="btn btn-success me-2">Save</button>
+            <button type="button" class="btn btn-secondary" @onclick="CloseDialog">Cancel</button>
+        </EditForm>
+    </div>
+}
+
+@code {
+    private List<PACOM.WebApp.Data.Organization>? organizations;
+    private PACOM.WebApp.Data.Organization selectedOrg = new();
+    private bool showDialog = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOrganizations();
+    }
+
+    private async Task LoadOrganizations()
+    {
+        var response = await OrgService.ListOrganizationAsync();
+        organizations = response.Data ?? new List<PACOM.WebApp.Data.Organization>();
+
+        // Force UI to update
+        StateHasChanged();
+    }
+
+    private void AddNew()
+    {
+        selectedOrg = new PACOM.WebApp.Data.Organization();
+        showDialog = true;
+    }
+
+    private async Task EditOrg(PACOM.WebApp.Data.Organization org)
+    {
+        selectedOrg = new PACOM.WebApp.Data.Organization
+        {
+            Id = org.Id,
+            Name = org.Name,
+            Code = org.Code,
+            Description = org.Description,
+            url = org.url,
+            IsActive = org.IsActive
+        };
+
+        var result = OrgService.ManageOrganizationAsync(selectedOrg);
+
+        showDialog = false;
+
+        await LoadOrganizations();
+    }
+
+    private async Task SaveOrg()
+    {
+        if (selectedOrg.Id != 0)
+        {
+            
+        }
+
+        var result = await OrgService.ManageOrganizationAsync(selectedOrg);
+        showDialog = false;
+
+        await LoadOrganizations();
+    }
+
+    private async Task DeleteOrg(int id)
+    {
+        var result = await OrgService.RemoveOrganization(id);
+        await LoadOrganizations(); // Refresh list
+    }
+
+
+    private void CloseDialog()
+    {
+        showDialog = false;
+    }
+}

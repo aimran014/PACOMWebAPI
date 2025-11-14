@@ -58,3 +58,32 @@ h1:focus {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+/* Add to site.css or scoped css */
+.drawer {
+    position: fixed;
+    top: 0;
+    right: -400px; /* hidden by default */
+    width: 400px;
+    height: 100%;
+    background-color: #fff;
+    box-shadow: -4px 0 8px rgba(0,0,0,0.2);
+    padding: 20px;
+    overflow-y: auto;
+    transition: right 0.3s ease-in-out;
+    z-index: 1050;
+}
+
+    .drawer.show {
+        right: 0; /* slide in */
+    }
+
+.drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .drawer-header h4 {
+        margin: 0;
+    }

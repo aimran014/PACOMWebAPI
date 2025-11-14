@@ -355,7 +355,7 @@ namespace PACOM.WebApp.Service
                     existing.Name = organization.Name;
                     existing.Description = organization.Description;
                     existing.IsActive = organization.IsActive;
-                    existing.url = $"{organization.url}/api/receive";
+                    existing.url = organization.url;
                     existing.UpdatedAt = DateTime.UtcNow;
 
                     _context.Organizations.Update(existing);
@@ -368,7 +368,7 @@ namespace PACOM.WebApp.Service
                 else
                 {
                     // ✅ Add new organization
-                    organization.url = $"{organization.url}/api/receive";
+                    organization.url = organization.url;
                     organization.CreatedAt = DateTime.UtcNow;
                     organization.UpdatedAt = DateTime.UtcNow;
 
@@ -384,6 +384,42 @@ namespace PACOM.WebApp.Service
             {
                 response.Error = 1;
                 response.Message = $"Error managing organization: {ex.Message}";
+                response.Data = null;
+            }
+
+            return response;
+        }
+
+        public async Task<PacomResponse<Organization>> RemoveOrganization(int orgId)
+        {
+            var response = new PacomResponse<Organization>();
+
+            try
+            {
+                await using var _context = await _contextFactory.CreateDbContextAsync();
+
+                var organization = await _context.Organizations
+                    .FirstOrDefaultAsync(o => o.Id == orgId);
+
+                if (organization == null)
+                {
+                    response.Error = 1;
+                    response.Message = "Organization not found.";
+                    response.Data = null;
+                    return response;
+                }
+
+                _context.Organizations.Remove(organization);
+                await _context.SaveChangesAsync();
+
+                response.Error = 0;
+                response.Message = "Organization removed successfully.";
+                response.Data = organization;
+            }
+            catch (Exception ex)
+            {
+                response.Error = 1;
+                response.Message = $"Error removing organization: {ex.Message}";
                 response.Data = null;
             }
 

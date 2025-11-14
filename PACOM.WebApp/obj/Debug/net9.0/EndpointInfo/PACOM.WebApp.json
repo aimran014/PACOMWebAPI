@@ -5,7 +5,50 @@
     "version": "1.0"
   },
   "paths": {
-    "/API/ManageOrganization": {
+    "/API/login": {
+      "post": {
+        "tags": [
+          "API"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/API/ListPacomOrganization": {
+      "get": {
+        "tags": [
+          "API"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/API/AddUpdateOrganization": {
       "post": {
         "tags": [
           "API"
@@ -36,7 +79,7 @@
         }
       }
     },
-    "/API/organizations": {
+    "/API/ListOrganizations": {
       "get": {
         "tags": [
           "API"
@@ -85,14 +128,28 @@
         }
       }
     },
-    "/API/List User": {
-      "get": {
+    "/API/Webhhok": {
+      "post": {
         "tags": [
           "API"
         ],
         "parameters": [
           {
             "name": "OrganizationCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Actived",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "WebhookUrl",
             "in": "query",
             "schema": {
               "type": "string"
@@ -121,6 +178,20 @@
   },
   "components": {
     "schemas": {
+      "LoginModel": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "nullable": true
+          },
+          "password": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
       "Organization": {
         "required": [
           "code",
@@ -166,6 +237,19 @@
         },
         "additionalProperties": false
       }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "description": "Enter Bearer token",
+        "scheme": "Bearer",
+        "bearerFormat": "JWT"
+      }
     }
-  }
+  },
+  "security": [
+    {
+      "Bearer": [ ]
+    }
+  ]
 }
