@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PACOM.WebApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+db5288512e4fbf98a55c4d10416c0458b18ef78a")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c731251ee9f5af8843f47ed39d3f3976b67d262e")]
 [assembly: System.Reflection.AssemblyProductAttribute("PACOM.WebApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PACOM.WebApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

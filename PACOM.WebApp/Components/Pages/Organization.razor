@@ -22,7 +22,6 @@ else
             <tr>
                 <th>ID</th>
                 <th>Name</th>
-                <th>Code</th>
                 <th>Description</th>
                 <th>Active</th>
                 <th>Actions</th>
@@ -34,7 +33,6 @@ else
                 <tr>
                     <td>@org.Id</td>
                     <td>@org.Name</td>
-                    <td>@org.Code</td>
                     <td>@org.Description</td>
                     <td>@org.url</td>
                     <td>@(org.IsActive ? "Yes" : "No")</td>
@@ -62,12 +60,13 @@ else
 
             <div class="mb-2">
                 <label>Name</label>
-                <InputText class="form-control" @bind-Value="selectedOrg.Name" />
-            </div>
-
-            <div class="mb-2">
-                <label>Code</label>
-                <InputText class="form-control" @bind-Value="selectedOrg.Code" />
+                <InputSelect class="form-control" @bind-Value="selectedOrg.Name">
+                    <option value="">-- Select Name --</option>
+                    @foreach (var name in organizationNames)
+                    {
+                        <option value="@name">@name</option>
+                    }
+                </InputSelect>
             </div>
 
             <div class="mb-2">
@@ -93,6 +92,7 @@ else
 
 @code {
     private List<PACOM.WebApp.Data.Organization>? organizations;
+    private List<string> organizationNames = new();
     private PACOM.WebApp.Data.Organization selectedOrg = new();
     private bool showDialog = false;
 
@@ -105,6 +105,10 @@ else
     {
         var response = await OrgService.ListOrganizationAsync();
         organizations = response.Data ?? new List<PACOM.WebApp.Data.Organization>();
+
+        // Proper async call to get PACOM dropdown list
+        var pacomResponse = DatasourcesService.ListPacomOrganization().Data;
+        organizationNames = pacomResponse.ToList();
 
         // Force UI to update
         StateHasChanged();
@@ -122,7 +126,7 @@ else
         {
             Id = org.Id,
             Name = org.Name,
-            Code = org.Code,
+            Code = org.Name,
             Description = org.Description,
             url = org.url,
             IsActive = org.IsActive
@@ -130,9 +134,7 @@ else
 
         var result = OrgService.ManageOrganizationAsync(selectedOrg);
 
-        showDialog = false;
-
-        await LoadOrganizations();
+        showDialog = true;
     }
 
     private async Task SaveOrg()
@@ -141,6 +143,8 @@ else
         {
             
         }
+
+        selectedOrg.Code = selectedOrg.Name; // Ensure Code matches Name
 
         var result = await OrgService.ManageOrganizationAsync(selectedOrg);
         showDialog = false;
