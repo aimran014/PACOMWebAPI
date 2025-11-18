@@ -1,22 +1,6 @@
 [
   {
     "ContainingType": "PACOM.WebApp.APIController",
-    "Method": "AddUpdateOrganization",
-    "RelativePath": "API/AddUpdateOrganization",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "organization",
-        "Type": "PACOM.WebApp.Data.Organization",
-        "IsRequired": true
-      }
-    ],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "PACOM.WebApp.APIController",
     "Method": "PacomEventLog",
     "RelativePath": "API/EventLog",
     "HttpMethod": "POST",
@@ -43,38 +27,12 @@
   },
   {
     "ContainingType": "PACOM.WebApp.APIController",
-    "Method": "GetOrganization",
-    "RelativePath": "API/ListOrganizations",
-    "HttpMethod": "GET",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "PACOM.WebApp.APIController",
     "Method": "PacomListOrganization",
     "RelativePath": "API/ListPacomOrganization",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
     "Parameters": [],
-    "ReturnTypes": []
-  },
-  {
-    "ContainingType": "PACOM.WebApp.APIController",
-    "Method": "Login",
-    "RelativePath": "API/login",
-    "HttpMethod": "POST",
-    "IsController": true,
-    "Order": 0,
-    "Parameters": [
-      {
-        "Name": "login",
-        "Type": "PACOM.WebApp.Model.LoginModel",
-        "IsRequired": true
-      }
-    ],
     "ReturnTypes": []
   },
   {

@@ -2,6 +2,7 @@
 using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using PACOM.WebApp.Data;
@@ -17,6 +18,7 @@ namespace PACOM.WebApp.Service
 {
     public class DatasourcesService
     {
+        private static string? _pacomConnectionString;
         private static string? _connectionString;
         //private readonly ApplicationDbContext _context;
         private readonly IDbContextFactory<ApplicationDbContext> _contextFactory;
@@ -29,6 +31,7 @@ namespace PACOM.WebApp.Service
         public static void Initialize(IConfiguration config)
         {
             _connectionString = config.GetConnectionString("DefaultConnection");
+            _pacomConnectionString = config.GetConnectionString("PacomConnection");
         }
 
         //public static async Task SaveWebhookToDatabase(string raw)
@@ -60,7 +63,9 @@ namespace PACOM.WebApp.Service
         {
             var result = new PacomResponse<EventLogModel>();
 
-            using (var conn = new SqlConnection(_connectionString))
+            var GetTodayUtcTime = DateTime.UtcNow;
+
+            using (var conn = new SqlConnection(_pacomConnectionString))
             {
                 conn.Open();
 
@@ -83,8 +88,30 @@ namespace PACOM.WebApp.Service
                                 LEFT JOIN [ArcoDbView].[dbo].[Credentials] c ON l.CredentialId = c.Id)
                                 SELECT TOP(1) Version, Id, Scope, ScopeName, OrganizationName, EventId, EventName, UserId, UserName, FirstName, LastName, CredentialId, CredentialNumber, Value, AreaFromId, AreaToId, CustomDataString, CustomDataUDF, UtcTime
                                 FROM TransactionLog
-                                WHERE AreaFromId IS NOT NULL AND Version = '2561039984480210432'
+                                WHERE AreaFromId IS NOT NULL AND CONVERT(date, UtcTime) = '2025-11-17'
                                 ORDER BY Version ASC";
+
+                //string query = @"WITH TransactionLog AS (SELECT l.Version, CAST(l.Id AS varchar(36)) AS Id, l.Scope, s.Name AS ScopeName, o.name as OrganizationName,
+                //                CAST(EventId AS varchar(36)) AS EventId, 
+                //                e.FullName AS EventName,
+                //                CAST(l.UserId AS varchar(36)) AS UserId, 
+                //                u.FirstName AS UserName, u.FirstName, u.LastName, 
+                //                CAST(CredentialId AS varchar(36)) AS CredentialId, 
+                //                c.CardNumber AS CredentialNumber, 
+                //                [Value], CAST(AreaFromId AS varchar(36)) AS AreaFromId, 
+                //                CAST(AreaToId AS varchar(36)) AS AreaToId, 
+                //                CustomDataString, u.CustomData AS CustomDataUDF,
+                //                [time] AS UtcTime 
+                //                FROM [ArcoDbStatusView].[dbo].[ActivityLog] l
+                //                LEFT JOIN [ArcoDbView].[dbo].[Organisations] o on SUBSTRING(l.Scope, 1, CHARINDEX('/', l.Scope, 2)) = o.Scope
+                //                LEFT JOIN [ArcoDbView].[dbo].[Sites] s ON l.Scope = s.Scope AND s.IsDeleted = 0
+                //                LEFT JOIN [ArcoDbView].[dbo].[SchemaEvents] e ON l.EventId = e.Id
+                //                LEFT JOIN [ArcoDbView].[dbo].[User] u ON l.UserId = u.Id
+                //                LEFT JOIN [ArcoDbView].[dbo].[Credentials] c ON l.CredentialId = c.Id)
+                //                SELECT TOP(1) Version, Id, Scope, ScopeName, OrganizationName, EventId, EventName, UserId, UserName, FirstName, LastName, CredentialId, CredentialNumber, Value, AreaFromId, AreaToId, CustomDataString, CustomDataUDF, UtcTime
+                //                FROM TransactionLog
+                //                WHERE AreaFromId IS NOT NULL AND Version = '2561039984480210432'
+                //                ORDER BY Version ASC";
 
                 var data = conn.Query<EventLogModel>(query).FirstOrDefault();
 
@@ -104,7 +131,7 @@ namespace PACOM.WebApp.Service
         {
             var result = new PacomResponse<EventLogModel>();
 
-            using (var conn = new SqlConnection(_connectionString))
+            using (var conn = new SqlConnection(_pacomConnectionString))
             {
                 conn.Open();
 
@@ -149,7 +176,7 @@ namespace PACOM.WebApp.Service
             var result = new PacomResponse<List<EventLogModel>>();
             try
             {
-                using (var conn = new SqlConnection(_connectionString))
+                using (var conn = new SqlConnection(_pacomConnectionString))
                 {
                     conn.Open();
 
@@ -205,9 +232,10 @@ namespace PACOM.WebApp.Service
             var result = new PacomResponse<List<EventLogModel>>();
             try
             {
-                using (var conn = new SqlConnection(_connectionString))
+                using (var conn = new SqlConnection(_pacomConnectionString))
                 {
                     conn.Open();
+
 
                     string query = @"WITH TransactionLog AS (SELECT l.Version, CAST(l.Id AS varchar(36)) AS Id, l.Scope, s.Name AS ScopeName, o.name as OrganizationName, 
                                                             CAST(EventId AS varchar(36)) AS EventId, 
@@ -229,7 +257,7 @@ namespace PACOM.WebApp.Service
                                     SELECT TOP(100) Version,Id, Scope, ScopeName, OrganizationName, EventId, EventName, UserId, UserName, FirstName, LastName, CredentialId, CredentialNumber, Value, AreaFromId, AreaToId, CustomDataString, CustomDataUDF, UtcTime
                                     FROM TransactionLog
                                     WHERE AreaFromId IS NOT NULL 
-                                    AND Version > @LastVersionProcess AND Version < @LatestVersion 
+                                    AND Version BETWEEN @LastVersionProcess AND @LatestVersion
                                     ORDER BY UtcTime ASC";
 
                     var data = conn.Query<EventLogModel>(query, new { LastVersionProcess = LastVersionProcess, LatestVersion = LatestVersion }).AsList();
@@ -257,7 +285,7 @@ namespace PACOM.WebApp.Service
 
         public static string GetColumnNameById(string ColumnId, string ScopeOrganization)
         {
-            using (var conn = new SqlConnection(_connectionString))
+            using (var conn = new SqlConnection(_pacomConnectionString))
             {
                 conn.Open();
 
@@ -277,7 +305,7 @@ namespace PACOM.WebApp.Service
         {
             var result = new PacomResponse<List<ObjectMetaData>>();
 
-            using (var conn = new SqlConnection(_connectionString))
+            using (var conn = new SqlConnection(_pacomConnectionString))
             {
                 conn.Open();
 
@@ -300,7 +328,7 @@ namespace PACOM.WebApp.Service
         {
             var result = new PacomResponse<List<UsersModel>>();
 
-            using (var conn = new SqlConnection(_connectionString))
+            using (var conn = new SqlConnection(_pacomConnectionString))
             {
                 conn.Open();
 
@@ -324,7 +352,7 @@ namespace PACOM.WebApp.Service
         public static PacomResponse<List<string>> ListPacomOrganization()
         {
             var result = new PacomResponse<List<string>>();
-            using (var conn = new SqlConnection(_connectionString))
+            using (var conn = new SqlConnection(_pacomConnectionString))
             {
                 conn.Open();
                 string query = @"SELECT Name FROM [ArcoDbView].[dbo].[Organisations] WHERE IsDeleted = 0";

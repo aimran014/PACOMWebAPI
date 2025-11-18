@@ -5,6 +5,8 @@ VisualStudioVersion = 17.14.36623.8
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PACOM.WebApp", "PACOM.WebApp\PACOM.WebApp.csproj", "{968D3A47-8D2B-408C-B5DE-F5FC967D1EB8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PACOM.Client", "PACOM.Client\PACOM.Client.csproj", "{D409D687-0DCD-40C3-A3FC-8D9DE46BED7F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{968D3A47-8D2B-408C-B5DE-F5FC967D1EB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{968D3A47-8D2B-408C-B5DE-F5FC967D1EB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{968D3A47-8D2B-408C-B5DE-F5FC967D1EB8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D409D687-0DCD-40C3-A3FC-8D9DE46BED7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D409D687-0DCD-40C3-A3FC-8D9DE46BED7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D409D687-0DCD-40C3-A3FC-8D9DE46BED7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D409D687-0DCD-40C3-A3FC-8D9DE46BED7F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

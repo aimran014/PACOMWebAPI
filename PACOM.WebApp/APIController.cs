@@ -29,48 +29,133 @@ namespace PACOM.WebApp
         }
 
 
-        [HttpPost("login")]
-        public IActionResult Login([FromBody] LoginModel login)
-        {
-            // Find user in DB
-            var user = FakeUsers.Users
-                .FirstOrDefault(x => x.Username == login.Username && x.Password == login.Password);
+        //[HttpPost("login")]
+        //public IActionResult Login([FromBody] LoginModel login)
+        //{
+        //    // Find user in DB
+        //    var user = FakeUsers.Users
+        //        .FirstOrDefault(x => x.Username == login.Username && x.Password == login.Password);
 
-            if (user == null)
-                return Unauthorized(new { message = "Invalid username or password" });
+        //    if (user == null)
+        //        return Unauthorized(new { message = "Invalid username or password" });
 
-            // Read secret key from appsettings.json
-            var key = Encoding.UTF8.GetBytes(_config["JwtSettings:SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey missing"));
+        //    // Read secret key from appsettings.json
+        //    var key = Encoding.UTF8.GetBytes(_config["JwtSettings:SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey missing"));
 
-            var claims = new[]
-            {
-            new Claim(ClaimTypes.Name, user.Username ?? "User"),
-            new Claim("OrganizationId", user.OrganizationId.ToString()),
-            new Claim(ClaimTypes.Role, user.Role ?? "User")
-            };
+        //    var claims = new[]
+        //    {
+        //    new Claim(ClaimTypes.Name, user.Username ?? "User"),
+        //    new Claim("OrganizationId", user.OrganizationId.ToString()),
+        //    new Claim(ClaimTypes.Role, user.Role ?? "User")
+        //    };
 
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddHours(4),   // token valid 4 hours
-                SigningCredentials = new SigningCredentials(
-                new SymmetricSecurityKey(key),
-                SecurityAlgorithms.HmacSha256Signature
-            )
-            };
+        //    var tokenDescriptor = new SecurityTokenDescriptor
+        //    {
+        //        Subject = new ClaimsIdentity(claims),
+        //        Expires = DateTime.UtcNow.AddHours(4),   // token valid 4 hours
+        //        SigningCredentials = new SigningCredentials(
+        //        new SymmetricSecurityKey(key),
+        //        SecurityAlgorithms.HmacSha256Signature
+        //    )
+        //    };
 
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            var jwt = tokenHandler.WriteToken(token);
+        //    var tokenHandler = new JwtSecurityTokenHandler();
+        //    var token = tokenHandler.CreateToken(tokenDescriptor);
+        //    var jwt = tokenHandler.WriteToken(token);
 
 
-            return Ok(new
-            {
-                Username = user.Username,
-                Token = jwt,
-                Expires = tokenDescriptor.Expires
-            });
-        }
+        //    return Ok(new
+        //    {
+        //        Username = user.Username,
+        //        Token = jwt,
+        //        Expires = tokenDescriptor.Expires
+        //    });
+        //}
+
+
+
+        ////[Authorize]
+        //[HttpPost("AddUpdateOrganization")]
+        //public async Task<IActionResult> AddUpdateOrganization([FromBody] Organization organization)
+        //{
+        //    var username = User.Identity?.Name ?? "User";
+        //    var orgId = User.FindFirst("OrganizationId")?.Value;
+        //    var role = User.FindFirst(ClaimTypes.Role)?.Value;
+        //    var Tenant = await _datasourcesService.ListOrganizationAsync();
+
+        //    // If not admin, filter organizations by token's orgId
+        //    if (role != "Admin")
+        //    {
+        //        // Find organization by token
+        //        var code = Tenant.Data!.First(x => x.Id == int.Parse(orgId ?? "0")).Code;
+
+        //        if (!Tenant.Data!.Any(x => x.Code == organization.Code))
+        //            return BadRequest(new { Message = "Invalid organization data." });
+
+
+        //        if (code != organization.Code)
+        //        {
+        //            return BadRequest(new { Message = "Invalid organization data." });
+        //        }
+        //    }
+
+        //    if (organization == null)
+        //        return BadRequest(new { Message = "Invalid organization data." });
+
+        //    var result = await _datasourcesService.ManageOrganizationAsync(organization);
+
+        //    if (result.Error == 0)
+        //        return Ok(result);
+        //    else
+        //        return StatusCode(500, result);
+        //}
+
+
+        ////[Authorize]
+        //[HttpGet("ListOrganizations")]
+        //public async Task<IActionResult> GetOrganization()
+        //{
+        //    var response = new PacomResponse<List<Organization>>();
+
+        //    try
+        //    {
+
+        //        var username = User.Identity?.Name ?? "User";
+        //        var orgId = User.FindFirst("OrganizationId")?.Value;
+        //        var role = User.FindFirst(ClaimTypes.Role)?.Value;
+        //        var organization = await _datasourcesService.ListOrganizationAsync();
+
+        //        // If not admin, filter organizations by token's orgId
+        //        if (role != "Admin")
+        //        {
+        //            // Find organization by token
+        //            organization.Data = organization.Data!.Where(x => x.Id == int.Parse(orgId ?? "0")).ToList();
+
+        //        }
+
+        //        if (organization.Data == null)
+        //        {
+        //            response.Error = 1;
+        //            response.Message = "Organization not found.";
+        //            response.Data = null;
+        //            return Unauthorized(response);
+        //        }
+
+        //        // Build success response
+        //        response.Error = 0;
+        //        response.Message = "Organization retrieved successfully.";
+        //        response.Data = organization.Data;
+
+        //        return Ok(response);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        response.Error = 1;
+        //        response.Message = $"Error retrieving organization: {ex.Message}";
+        //        response.Data = null;
+        //        return StatusCode(500, response);
+        //    }
+        //}
 
 
         [HttpGet("ListPacomOrganization")]
@@ -80,92 +165,6 @@ namespace PACOM.WebApp
             return Ok(result);
         }
 
-
-        [Authorize]
-        [HttpPost("AddUpdateOrganization")]
-        public async Task<IActionResult> AddUpdateOrganization([FromBody] Organization organization)
-        {
-            var username = User.Identity?.Name ?? "User";
-            var orgId = User.FindFirst("OrganizationId")?.Value;
-            var role = User.FindFirst(ClaimTypes.Role)?.Value;
-            var Tenant = await _datasourcesService.ListOrganizationAsync();
-
-            // If not admin, filter organizations by token's orgId
-            if (role != "Admin")
-            {
-                // Find organization by token
-                var code = Tenant.Data!.First(x => x.Id == int.Parse(orgId ?? "0")).Code;
-
-                if (!Tenant.Data!.Any(x => x.Code == organization.Code))
-                    return BadRequest(new { Message = "Invalid organization data." });
-
-
-                if (code != organization.Code)
-                {
-                    return BadRequest(new { Message = "Invalid organization data." });
-                }
-            }
-
-            if (organization == null)
-                return BadRequest(new { Message = "Invalid organization data." });
-
-            var result = await _datasourcesService.ManageOrganizationAsync(organization);
-
-            if (result.Error == 0)
-                return Ok(result);
-            else
-                return StatusCode(500, result);
-        }
-
-
-        [Authorize]
-        [HttpGet("ListOrganizations")]
-        public async Task<IActionResult> GetOrganization()
-        {
-            var response = new PacomResponse<List<Organization>>();
-
-            try
-            {
-
-                var username = User.Identity?.Name ?? "User";
-                var orgId = User.FindFirst("OrganizationId")?.Value;
-                var role = User.FindFirst(ClaimTypes.Role)?.Value;
-                var organization = await _datasourcesService.ListOrganizationAsync();
-
-                // If not admin, filter organizations by token's orgId
-                if (role != "Admin")
-                {
-                    // Find organization by token
-                    organization.Data = organization.Data!.Where(x => x.Id == int.Parse(orgId ?? "0")).ToList();
-
-                }
-
-                if (organization.Data == null)
-                {
-                    response.Error = 1;
-                    response.Message = "Organization not found.";
-                    response.Data = null;
-                    return Unauthorized(response);
-                }
-
-                // Build success response
-                response.Error = 0;
-                response.Message = "Organization retrieved successfully.";
-                response.Data = organization.Data;
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                response.Error = 1;
-                response.Message = $"Error retrieving organization: {ex.Message}";
-                response.Data = null;
-                return StatusCode(500, response);
-            }
-        }
-
-
-        [Authorize]
         [HttpPost("EventLog")]
         public async Task<IActionResult> PacomEventLog( string OrganizationCode, DateTime StartDate, DateTime EndDate)
         {
@@ -174,12 +173,12 @@ namespace PACOM.WebApp
             var role = User.FindFirst(ClaimTypes.Role)?.Value;
 
             // If not admin, filter organizations by token's orgId
-            if (role != "Admin")
-            {
-                // Find organization by token
-                var organization = await _datasourcesService.ListOrganizationAsync();
-                OrganizationCode = organization.Data!.First(x => x.Id == int.Parse(orgId ?? "0")).Code;
-            }
+            //if (role != "Admin")
+            //{
+            //    // Find organization by token
+            //    var organization = await _datasourcesService.ListOrganizationAsync();
+            //    OrganizationCode = organization.Data!.First(x => x.Id == int.Parse(orgId ?? "0")).Code;
+            //}
 
             // Define Malaysia time zone (same as Singapore)
             var malaysiaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Singapore Standard Time");
@@ -193,7 +192,6 @@ namespace PACOM.WebApp
         }
 
 
-        [Authorize]
         [HttpPost("Webhhok")]
         public async Task<IActionResult> PacomWebhook( string OrganizationCode, bool Actived, string WebhookUrl)
         {
