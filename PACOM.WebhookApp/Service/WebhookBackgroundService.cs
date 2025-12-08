@@ -112,7 +112,7 @@ namespace PACOM.WebhookApp.Service
                     CustomDataEventType = JsonSerializer.Serialize(r.CustomDataEventType),
                     CustomDataUDFType = JsonSerializer.Serialize(r.CustomDataUDFType),
                     MykadNumber = r.MykadNumber,
-                    IsProcessed = false
+                    IsProcessed = null
                 }).ToList();
 
                 // direct save without sent webhook when return failed.

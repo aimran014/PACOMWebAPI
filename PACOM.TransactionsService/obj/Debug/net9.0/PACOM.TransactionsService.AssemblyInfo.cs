@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PACOM.TransactionsService")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a1ab138bfa65af6818870eeafe6fa05c126de4bd")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b8dde56d1a6c98eeae0d9cf3558dc6fade4671a9")]
 [assembly: System.Reflection.AssemblyProductAttribute("PACOM.TransactionsService")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PACOM.TransactionsService")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

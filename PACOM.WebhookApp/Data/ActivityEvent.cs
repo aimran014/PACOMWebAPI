@@ -41,7 +41,7 @@ namespace PACOM.WebhookApp.Data
         public string ReaderName { get; set; } = string.Empty;
         public string CustomDataEventType { get; set; } = string.Empty;
         public string CustomDataUDFType { get; set; } = string.Empty;
-        public bool IsProcessed { get; set; } = false;
+        public bool? IsProcessed { get; set; } = null;
 
     }
 }

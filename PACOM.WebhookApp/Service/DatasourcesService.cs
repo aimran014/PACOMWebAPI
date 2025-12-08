@@ -542,7 +542,7 @@ namespace PACOM.WebhookApp.Service
             try
             {
                 var unprocessedEvents = await _contextFactory.ActivityEvents
-                    .Where(e => e.IsProcessed == false)
+                    .Where(e => e.IsProcessed != true )
                     .ToListAsync();
                 response.Error = 0;
                 response.Message = unprocessedEvents.Any()
