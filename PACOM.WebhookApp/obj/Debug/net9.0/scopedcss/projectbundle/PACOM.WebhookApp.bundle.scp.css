@@ -1,4 +1,4 @@
-/* _content/PACOM.WebhookApp/Components/Layout/LocalNavMenu.razor.rz.scp.css */
+/* /Components/Layout/LocalNavMenu.razor.rz.scp.css */
 .navbar-toggler[b-tq549kqxf9] {
     appearance: none;
     cursor: pointer;
@@ -124,7 +124,7 @@
         overflow-y: auto;
     }
 }
-/* _content/PACOM.WebhookApp/Components/Layout/MainLayout.razor.rz.scp.css */
+/* /Components/Layout/MainLayout.razor.rz.scp.css */
 .page[b-n43zbwsy9m] {
     position: relative;
     display: flex;
@@ -223,7 +223,7 @@ main[b-n43zbwsy9m] {
         right: 0.75rem;
         top: 0.5rem;
     }
-/* _content/PACOM.WebhookApp/Components/Layout/NavMenu.razor.rz.scp.css */
+/* /Components/Layout/NavMenu.razor.rz.scp.css */
 .navbar-toggler[b-q9y3xsol30] {
     appearance: none;
     cursor: pointer;

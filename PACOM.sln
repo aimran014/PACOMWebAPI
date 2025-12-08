@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36623.8
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PACOM.WebApp", "PACOM.WebApp\PACOM.WebApp.csproj", "{968D3A47-8D2B-408C-B5DE-F5FC967D1EB8}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PACOM.Client", "PACOM.Client\PACOM.Client.csproj", "{D409D687-0DCD-40C3-A3FC-8D9DE46BED7F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PACOM.WebhookApp", "PACOM.WebhookApp\PACOM.WebhookApp.csproj", "{B2945381-C4A2-78A3-8C1F-2F5843B104A6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PACOM.TransactionsService", "PACOM.TransactionsService\PACOM.TransactionsService.csproj", "{A266D7A7-5698-4CA9-BBC0-0930BEE5FAB8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,10 +15,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{968D3A47-8D2B-408C-B5DE-F5FC967D1EB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{968D3A47-8D2B-408C-B5DE-F5FC967D1EB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{968D3A47-8D2B-408C-B5DE-F5FC967D1EB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{968D3A47-8D2B-408C-B5DE-F5FC967D1EB8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D409D687-0DCD-40C3-A3FC-8D9DE46BED7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D409D687-0DCD-40C3-A3FC-8D9DE46BED7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D409D687-0DCD-40C3-A3FC-8D9DE46BED7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -27,6 +23,10 @@ Global
 		{B2945381-C4A2-78A3-8C1F-2F5843B104A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B2945381-C4A2-78A3-8C1F-2F5843B104A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B2945381-C4A2-78A3-8C1F-2F5843B104A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A266D7A7-5698-4CA9-BBC0-0930BEE5FAB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A266D7A7-5698-4CA9-BBC0-0930BEE5FAB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A266D7A7-5698-4CA9-BBC0-0930BEE5FAB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A266D7A7-5698-4CA9-BBC0-0930BEE5FAB8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

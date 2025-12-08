@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PACOM.Client")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+233be07f93c9c8895c663062813bf5ad62802e20")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+ae1cc82f654718d04fb1867a053c00b957dc0283")]
 [assembly: System.Reflection.AssemblyProductAttribute("PACOM.Client")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PACOM.Client")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

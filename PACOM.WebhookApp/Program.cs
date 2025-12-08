@@ -53,7 +53,7 @@ builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSe
 builder.Services.AddScoped<DatasourcesService>();
 
 // ✅ Register background worker
-builder.Services.AddHostedService<WebhookBackgroundService>();
+//builder.Services.AddHostedService<WebhookBackgroundService>();
 
 var app = builder.Build();
 
