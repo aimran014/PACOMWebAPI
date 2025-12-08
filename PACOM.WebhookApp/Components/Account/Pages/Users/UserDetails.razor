@@ -1,0 +1,67 @@
+﻿@page "/Account/Users/UserDetails/{UserId}"
+@* @attribute [Authorize(Roles = "Admin")] *@
+
+@attribute [Authorize]
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using PACOM.WebhookApp.Data
+
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager NavManager
+@rendermode InteractiveServer
+
+<h3>User Details</h3>
+
+@if (user == null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <dl class="row">
+        <dt class="col-sm-3">Email</dt>
+        <dd class="col-sm-9">@user.Email</dd>
+
+        <dt class="col-sm-3">Username</dt>
+        <dd class="col-sm-9">@user.UserName</dd>
+
+        <dt class="col-sm-3">Account Status</dt>
+        <dd class="col-sm-9">@status</dd>
+    </dl>
+
+
+    <a href="#" class="btn btn-warning" @onclick="ToggleLockout" @onclick:preventDefault="true">
+        @(isDisabled ? "Enable Account" : "Disable Account")
+    </a>
+
+    <a class="btn btn-secondary" href="@($"/Account/Users/Users")">
+        Back
+    </a>
+}
+
+
+@code {
+    [Parameter] public string? UserId { get; set; }
+    ApplicationUser? user;
+    bool isDisabled;
+    string status = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await UserManager.FindByIdAsync(UserId);
+        isDisabled = user?.LockoutEnd.HasValue == true && user.LockoutEnd > DateTimeOffset.UtcNow;
+        status = isDisabled ? "Disabled" : "Active";
+    }
+
+    async Task ToggleLockout()
+    {
+        if (!isDisabled)
+            await UserManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddYears(100));
+        else
+            await UserManager.SetLockoutEndDateAsync(user, null);
+
+        NavManager.NavigateTo(NavManager.Uri, true);
+    }
+
+}

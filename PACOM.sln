@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PACOM.WebApp", "PACOM.WebAp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PACOM.Client", "PACOM.Client\PACOM.Client.csproj", "{D409D687-0DCD-40C3-A3FC-8D9DE46BED7F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PACOM.WebhookApp", "PACOM.WebhookApp\PACOM.WebhookApp.csproj", "{B2945381-C4A2-78A3-8C1F-2F5843B104A6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{D409D687-0DCD-40C3-A3FC-8D9DE46BED7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D409D687-0DCD-40C3-A3FC-8D9DE46BED7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D409D687-0DCD-40C3-A3FC-8D9DE46BED7F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2945381-C4A2-78A3-8C1F-2F5843B104A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2945381-C4A2-78A3-8C1F-2F5843B104A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2945381-C4A2-78A3-8C1F-2F5843B104A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2945381-C4A2-78A3-8C1F-2F5843B104A6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

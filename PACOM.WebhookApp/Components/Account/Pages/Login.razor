@@ -1,0 +1,171 @@
+﻿@page "/Account/Login"
+@layout PACOM.WebhookApp.Components.Layout.AuthLayout
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Identity
+@using PACOM.WebhookApp.Data
+@using MudBlazor
+@using PACOM.WebhookApp.Components.Layout
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject ILogger<Login> Logger
+@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>Log in</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex justify-center align-center" Style="height: 80vh;">
+    <MudPaper Elevation="5" Class="pa-8" Width="100%">
+        <div class="d-flex justify-center mb-4">
+            <MudIcon Icon="@Icons.Material.Filled.Lock" Color="Color.Primary" Size="Size.Large" />
+        </div>
+
+        <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true">
+            Welcome Back
+        </MudText>
+
+        <MudText Typo="Typo.body1" Align="Align.Center" Class="mb-8">
+            Use a local account to log in.
+        </MudText>
+
+        <section>
+            <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
+                <DataAnnotationsValidator />
+
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <MudAlert Severity="Severity.Error" Class="mb-4">@errorMessage</MudAlert>
+                }
+
+                <!-- EMAIL FIELD: Use InputText to ensure correct model binding -->
+                <div class="mb-4">
+                    <label style="color: var(--mud-palette-text-secondary); font-size: 0.875rem; margin-bottom: 4px; display: block;">Email</label>
+                    <InputText @bind-Value="Input.Email"
+                               type="email"
+                               autocomplete="username"
+                               required
+                               style="width: 100%; padding: 12px; background: transparent; border: 1px solid var(--mud-palette-lines-inputs); border-radius: 4px; color: var(--mud-palette-text-primary); outline: none;"
+                               onfocus="this.style.borderColor='var(--mud-palette-primary)'"
+                               onblur="this.style.borderColor='var(--mud-palette-lines-inputs)'" />
+                    <ValidationMessage For="() => Input.Email" style="color: var(--mud-palette-error); font-size: 0.75rem; margin-top: 4px;" />
+                </div>
+
+                <!-- PASSWORD FIELD: Use InputText with type="password" -->
+                <div class="mb-4">
+                    <label style="color: var(--mud-palette-text-secondary); font-size: 0.875rem; margin-bottom: 4px; display: block;">Password</label>
+                    <InputText @bind-Value="Input.Password"
+                               type="password"
+                               autocomplete="current-password"
+                               required
+                               style="width: 100%; padding: 12px; background: transparent; border: 1px solid var(--mud-palette-lines-inputs); border-radius: 4px; color: var(--mud-palette-text-primary); outline: none;"
+                               onfocus="this.style.borderColor='var(--mud-palette-primary)'"
+                               onblur="this.style.borderColor='var(--mud-palette-lines-inputs)'" />
+                    <ValidationMessage For="() => Input.Password" style="color: var(--mud-palette-error); font-size: 0.75rem; margin-top: 4px;" />
+                </div>
+
+                <!-- CHECKBOX: Use InputCheckbox for binding, styled manually -->
+                <div class="d-flex align-center mb-4">
+                    <label class="d-flex align-center" style="cursor: pointer; user-select: none;">
+                        <InputCheckbox @bind-Value="Input.RememberMe"
+                                       style="width: 18px; height: 18px; accent-color: var(--mud-palette-primary); margin-right: 12px; cursor: pointer;" />
+                        <MudText Typo="Typo.body1">Remember me?</MudText>
+                    </label>
+                </div>
+
+                <MudButton ButtonType="ButtonType.Submit"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Size="Size.Large"
+                           FullWidth="true"
+                           Class="mb-4">
+                    Log in
+                </MudButton>
+
+                <!-- Register Button -->
+                <MudButton Href="@(NavigationManager.GetUriWithQueryParameters("Account/Register", new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }))"
+                           Variant="Variant.Outlined"
+                           Color="Color.Primary"
+                           Size="Size.Large"
+                           FullWidth="true"
+                           Class="mb-4">
+                    Register as a new user
+                </MudButton>
+
+                <div class="d-flex flex-column align-center mt-4" style="gap: 6px;">
+                    <MudLink Href="Account/ForgotPassword">Forgot your password?</MudLink>
+                    <MudLink Href="Account/ResendEmailConfirmation">Resend email confirmation</MudLink>
+                </div>
+            </EditForm>
+        </section>
+
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private string? errorMessage;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationStateTask { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = (await AuthenticationStateTask).User;
+        if (user.Identity?.IsAuthenticated == true)
+        {
+            NavigationManager.NavigateTo("/", true);
+        }
+
+        if (HttpMethods.IsGet(HttpContext.Request.Method))
+        {
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+        }
+    }
+
+    public async Task LoginUser()
+    {
+        var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+        if (result.Succeeded)
+        {
+            Logger.LogInformation("User logged in.");
+            RedirectManager.RedirectTo("/");
+        }
+        else if (result.RequiresTwoFactor)
+        {
+            RedirectManager.RedirectTo(
+                "Account/LoginWith2fa",
+                new() { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
+        }
+        else if (result.IsLockedOut)
+        {
+            Logger.LogWarning("User account locked out.");
+            RedirectManager.RedirectTo("Account/Lockout");
+        }
+        else
+        {
+            errorMessage = "Error: Invalid login attempt.";
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = "";
+
+        [Required]
+        [DataType(DataType.Password)]
+        public string Password { get; set; } = "";
+
+        [Display(Name = "Remember me?")]
+        public bool RememberMe { get; set; } = false;
+    }
+}

@@ -1,0 +1,194 @@
+﻿@page "/Account/Register"
+@layout PACOM.WebhookApp.Components.Layout.AuthLayout
+
+@using System.ComponentModel.DataAnnotations
+@using System.Text
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
+@using PACOM.WebhookApp.Data
+@using MudBlazor
+@using PACOM.WebhookApp.Components.Layout
+
+@inject UserManager<ApplicationUser> UserManager
+@inject IUserStore<ApplicationUser> UserStore
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IEmailSender<ApplicationUser> EmailSender
+@inject ILogger<Register> Logger
+@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>Register</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="d-flex justify-center align-center" Style="min-height: 80vh; padding-top: 20px; padding-bottom: 20px;">
+    <MudPaper Elevation="5" Class="pa-8" Width="100%">
+        <div class="d-flex justify-center mb-4">
+            <MudIcon Icon="@Icons.Material.Filled.PersonAdd" Color="Color.Primary" Size="Size.Large" />
+        </div>
+
+        <MudText Typo="Typo.h4" Align="Align.Center" GutterBottom="true">
+            Create Account
+        </MudText>
+
+        <MudText Typo="Typo.body1" Align="Align.Center" Class="mb-8">
+            Join us by creating a new account.
+        </MudText>
+
+        <section>
+            <StatusMessage Message="@Message" />
+            <EditForm Model="Input" asp-route-returnUrl="@ReturnUrl" method="post" OnValidSubmit="RegisterUser" FormName="register">
+                <DataAnnotationsValidator />
+
+                <!-- Display validation summary for non-field specific errors -->
+                <ValidationSummary class="mb-4" style="color: var(--mud-palette-error);" />
+
+                <!-- EMAIL FIELD -->
+                <div class="mb-4">
+                    <label style="color: var(--mud-palette-text-secondary); font-size: 0.875rem; margin-bottom: 4px; display: block;">Email</label>
+                    <InputText @bind-Value="Input.Email"
+                               id="Input.Email"
+                               type="email"
+                               autocomplete="username"
+                               aria-required="true"
+                               style="width: 100%; padding: 12px; background: transparent; border: 1px solid var(--mud-palette-lines-inputs); border-radius: 4px; color: var(--mud-palette-text-primary); outline: none;"
+                               onfocus="this.style.borderColor='var(--mud-palette-primary)'"
+                               onblur="this.style.borderColor='var(--mud-palette-lines-inputs)'" />
+                    <ValidationMessage For="() => Input.Email" style="color: var(--mud-palette-error); font-size: 0.75rem; margin-top: 4px;" />
+                </div>
+
+                <!-- PASSWORD FIELD -->
+                <div class="mb-4">
+                    <label style="color: var(--mud-palette-text-secondary); font-size: 0.875rem; margin-bottom: 4px; display: block;">Password</label>
+                    <InputText @bind-Value="Input.Password"
+                               id="Input.Password"
+                               type="password"
+                               autocomplete="new-password"
+                               aria-required="true"
+                               style="width: 100%; padding: 12px; background: transparent; border: 1px solid var(--mud-palette-lines-inputs); border-radius: 4px; color: var(--mud-palette-text-primary); outline: none;"
+                               onfocus="this.style.borderColor='var(--mud-palette-primary)'"
+                               onblur="this.style.borderColor='var(--mud-palette-lines-inputs)'" />
+                    <ValidationMessage For="() => Input.Password" style="color: var(--mud-palette-error); font-size: 0.75rem; margin-top: 4px;" />
+                </div>
+
+                <!-- CONFIRM PASSWORD FIELD -->
+                <div class="mb-4">
+                    <label style="color: var(--mud-palette-text-secondary); font-size: 0.875rem; margin-bottom: 4px; display: block;">Confirm Password</label>
+                    <InputText @bind-Value="Input.ConfirmPassword"
+                               id="Input.ConfirmPassword"
+                               type="password"
+                               autocomplete="new-password"
+                               aria-required="true"
+                               style="width: 100%; padding: 12px; background: transparent; border: 1px solid var(--mud-palette-lines-inputs); border-radius: 4px; color: var(--mud-palette-text-primary); outline: none;"
+                               onfocus="this.style.borderColor='var(--mud-palette-primary)'"
+                               onblur="this.style.borderColor='var(--mud-palette-lines-inputs)'" />
+                    <ValidationMessage For="() => Input.ConfirmPassword" style="color: var(--mud-palette-error); font-size: 0.75rem; margin-top: 4px;" />
+                </div>
+
+                <MudButton ButtonType="ButtonType.Submit"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Size="Size.Large"
+                           FullWidth="true"
+                           Class="mb-4">
+                    Register
+                </MudButton>
+
+                <div class="d-flex flex-column align-center mt-4">
+                    <MudText Typo="Typo.body2">
+                        Already have an account? <MudLink Href="Account/Login">Log in</MudLink>
+                    </MudText>
+                </div>
+            </EditForm>
+        </section>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private IEnumerable<IdentityError>? identityErrors;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    private string? Message => identityErrors is null ? null : $"Error: {string.Join(", ", identityErrors.Select(error => error.Description))}";
+
+    public async Task RegisterUser(EditContext editContext)
+    {
+        var user = CreateUser();
+
+        await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+        var emailStore = GetEmailStore();
+        await emailStore.SetEmailAsync(user, Input.Email, CancellationToken.None);
+        var result = await UserManager.CreateAsync(user, Input.Password);
+
+        if (!result.Succeeded)
+        {
+            identityErrors = result.Errors;
+            return;
+        }
+
+        Logger.LogInformation("User created a new account with password.");
+
+        var userId = await UserManager.GetUserIdAsync(user);
+        var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+        var callbackUrl = NavigationManager.GetUriWithQueryParameters(
+            NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
+            new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code, ["returnUrl"] = ReturnUrl });
+
+        await EmailSender.SendConfirmationLinkAsync(user, Input.Email, HtmlEncoder.Default.Encode(callbackUrl));
+
+        if (UserManager.Options.SignIn.RequireConfirmedAccount)
+        {
+            RedirectManager.RedirectTo(
+                "Account/RegisterConfirmation",
+                new() { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl });
+        }
+
+        await SignInManager.SignInAsync(user, isPersistent: false);
+        RedirectManager.RedirectTo(ReturnUrl);
+    }
+
+    private ApplicationUser CreateUser()
+    {
+        try
+        {
+            return Activator.CreateInstance<ApplicationUser>();
+        }
+        catch
+        {
+            throw new InvalidOperationException($"Can't create an instance of '{nameof(ApplicationUser)}'. " +
+                $"Ensure that '{nameof(ApplicationUser)}' is not an abstract class and has a parameterless constructor.");
+        }
+    }
+
+    private IUserEmailStore<ApplicationUser> GetEmailStore()
+    {
+        if (!UserManager.SupportsUserEmail)
+        {
+            throw new NotSupportedException("The default UI requires a user store with email support.");
+        }
+        return (IUserEmailStore<ApplicationUser>)UserStore;
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [EmailAddress]
+        [Display(Name = "Email")]
+        public string Email { get; set; } = "";
+
+        [Required]
+        [StringLength(100, ErrorMessage = "The {0} must be at least {2} and at max {1} characters long.", MinimumLength = 6)]
+        [DataType(DataType.Password)]
+        [Display(Name = "Password")]
+        public string Password { get; set; } = "";
+
+        [DataType(DataType.Password)]
+        [Display(Name = "Confirm password")]
+        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        public string ConfirmPassword { get; set; } = "";
+    }
+}

@@ -1,15 +1,15 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.WebApp\\PACOM.WebApp.csproj": {}
+    "C:\\Users\\Lenovo Z50\\source\\repos\\PACOMWebAPI\\PACOM.WebApp\\PACOM.WebApp.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.WebApp\\PACOM.WebApp.csproj": {
+    "C:\\Users\\Lenovo Z50\\source\\repos\\PACOMWebAPI\\PACOM.WebApp\\PACOM.WebApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.WebApp\\PACOM.WebApp.csproj",
+        "projectUniqueName": "C:\\Users\\Lenovo Z50\\source\\repos\\PACOMWebAPI\\PACOM.WebApp\\PACOM.WebApp.csproj",
         "projectName": "PACOM.WebApp",
-        "projectPath": "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.WebApp\\PACOM.WebApp.csproj",
+        "projectPath": "C:\\Users\\Lenovo Z50\\source\\repos\\PACOMWebAPI\\PACOM.WebApp\\PACOM.WebApp.csproj",
         "packagesPath": "C:\\Users\\Lenovo Z50\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.WebApp\\obj\\",
         "projectStyle": "PackageReference",

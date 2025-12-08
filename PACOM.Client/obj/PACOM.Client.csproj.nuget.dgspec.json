@@ -1,15 +1,15 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.Client\\PACOM.Client.csproj": {}
+    "C:\\Users\\Lenovo Z50\\source\\repos\\PACOMWebAPI\\PACOM.Client\\PACOM.Client.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.Client\\PACOM.Client.csproj": {
+    "C:\\Users\\Lenovo Z50\\source\\repos\\PACOMWebAPI\\PACOM.Client\\PACOM.Client.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.Client\\PACOM.Client.csproj",
+        "projectUniqueName": "C:\\Users\\Lenovo Z50\\source\\repos\\PACOMWebAPI\\PACOM.Client\\PACOM.Client.csproj",
         "projectName": "PACOM.Client",
-        "projectPath": "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.Client\\PACOM.Client.csproj",
+        "projectPath": "C:\\Users\\Lenovo Z50\\source\\repos\\PACOMWebAPI\\PACOM.Client\\PACOM.Client.csproj",
         "packagesPath": "C:\\Users\\Lenovo Z50\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.Client\\obj\\",
         "projectStyle": "PackageReference",
