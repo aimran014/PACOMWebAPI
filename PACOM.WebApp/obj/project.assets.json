@@ -4439,11 +4439,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.WebApp\\PACOM.WebApp.csproj",
+      "projectUniqueName": "D:\\Prymax Technologies\\PACOM Webhook Management\\PACOMWebAPI\\PACOM.WebApp\\PACOM.WebApp.csproj",
       "projectName": "PACOM.WebApp",
-      "projectPath": "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.WebApp\\PACOM.WebApp.csproj",
+      "projectPath": "D:\\Prymax Technologies\\PACOM Webhook Management\\PACOMWebAPI\\PACOM.WebApp\\PACOM.WebApp.csproj",
       "packagesPath": "C:\\Users\\Lenovo Z50\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.WebApp\\obj\\",
+      "outputPath": "D:\\Prymax Technologies\\PACOM Webhook Management\\PACOMWebAPI\\PACOM.WebApp\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
