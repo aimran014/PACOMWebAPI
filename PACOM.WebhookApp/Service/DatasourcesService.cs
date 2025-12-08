@@ -559,5 +559,26 @@ namespace PACOM.WebhookApp.Service
             return response;
         }
 
+        public async Task<PacomResponse<List<ActivityEvent>>> ListActivityEventAsync(DateTime UtcStartDate, DateTime UtcEndDate, string? OrganizationName = null)
+        {
+            var response = new PacomResponse<List<ActivityEvent>>();
+            try
+            {
+                var ListEvents = await _contextFactory.ActivityEvents.ToListAsync();
+                response.Error = 0;
+                response.Message = ListEvents.Any()
+                    ? $"Found {ListEvents.Count} unprocessed activity event(s)."
+                    : "No unprocessed activity events found.";
+                response.Data = ListEvents;
+            }
+            catch (Exception ex)
+            {
+                response.Error = 1;
+                response.Message = $"Error retrieving unprocessed activity events: {ex.Message}";
+                response.Data = null;
+            }
+            return response;
+        }
+
     }
 }
