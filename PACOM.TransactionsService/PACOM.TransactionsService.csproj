@@ -10,4 +10,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.11" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PACOM.WebhookApp\PACOM.WebhookApp.csproj" />
+  </ItemGroup>
 </Project>
