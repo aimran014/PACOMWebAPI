@@ -564,12 +564,30 @@ namespace PACOM.WebhookApp.Service
             var response = new PacomResponse<List<ActivityEvent>>();
             try
             {
-                var ListEvents = await _contextFactory.ActivityEvents.ToListAsync();
+                var query = _contextFactory.ActivityEvents.AsQueryable();
+
+                // ✅ Filter by date range
+                query = query.Where(x =>
+                    x.UtcTime >= UtcStartDate &&
+                    x.UtcTime <= UtcEndDate);
+
+                // ✅ Filter by organization (if provided)
+                if (!string.IsNullOrWhiteSpace(OrganizationName))
+                {
+                    query = query.Where(x => x.Organization == OrganizationName);
+                }
+
+                // ✅ Only unprocessed records
+                //query = query.Where(x => x.IsProcessed == null || x.IsProcessed == false);
+
+                var listEvents = await query.ToListAsync();
+
                 response.Error = 0;
-                response.Message = ListEvents.Any()
-                    ? $"Found {ListEvents.Count} unprocessed activity event(s)."
+                response.Message = listEvents.Any()
+                    ? $"Found {listEvents.Count} unprocessed activity event(s)."
                     : "No unprocessed activity events found.";
-                response.Data = ListEvents;
+
+                response.Data = listEvents;
             }
             catch (Exception ex)
             {
