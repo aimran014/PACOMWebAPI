@@ -1,15 +1,15 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\MSI Laptop\\Source\\Repos\\PACOMWebAPI\\PACOM.Client\\PACOM.Client.csproj": {}
+    "C:\\Users\\MSI Laptop\\source\\repos\\PACOMWebAPI\\PACOM.Client\\PACOM.Client.csproj": {}
   },
   "projects": {
-    "C:\\Users\\MSI Laptop\\Source\\Repos\\PACOMWebAPI\\PACOM.Client\\PACOM.Client.csproj": {
+    "C:\\Users\\MSI Laptop\\source\\repos\\PACOMWebAPI\\PACOM.Client\\PACOM.Client.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\MSI Laptop\\Source\\Repos\\PACOMWebAPI\\PACOM.Client\\PACOM.Client.csproj",
+        "projectUniqueName": "C:\\Users\\MSI Laptop\\source\\repos\\PACOMWebAPI\\PACOM.Client\\PACOM.Client.csproj",
         "projectName": "PACOM.Client",
-        "projectPath": "C:\\Users\\MSI Laptop\\Source\\Repos\\PACOMWebAPI\\PACOM.Client\\PACOM.Client.csproj",
+        "projectPath": "C:\\Users\\MSI Laptop\\source\\repos\\PACOMWebAPI\\PACOM.Client\\PACOM.Client.csproj",
         "packagesPath": "C:\\Users\\MSI Laptop\\.nuget\\packages\\",
         "outputPath": "C:\\Users\\MSI Laptop\\Source\\Repos\\PACOMWebAPI\\PACOM.Client\\obj\\",
         "projectStyle": "PackageReference",
