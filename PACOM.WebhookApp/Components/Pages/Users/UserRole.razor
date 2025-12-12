@@ -1,4 +1,4 @@
-﻿@page "/Account/Users/UserRoles/{userId}"
+﻿@page "/Users/UserRoles/{userId}"
 @* @attribute [Authorize(Roles = "Admin")] *@
 
 @attribute [Authorize]
@@ -61,7 +61,7 @@
         </MudButton>
 
         <MudButton Color="Color.Secondary" Variant="Variant.Outlined"
-                   OnClick="@(() => NavManager.NavigateTo("/Account/Users/Users"))">
+                   OnClick="@(() => NavManager.NavigateTo("/Users/Users"))">
             Back
         </MudButton>
     }
@@ -124,6 +124,6 @@
         await Db.SaveChangesAsync();
         await UserManager.UpdateAsync(user);
 
-        NavManager.NavigateTo("/Account/Users/Users");
+        NavManager.NavigateTo("/Users/Users");
     }
 }

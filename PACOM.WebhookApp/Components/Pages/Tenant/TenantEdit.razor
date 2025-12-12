@@ -1,4 +1,4 @@
-﻿@page "/Account/Tenant/TenantEdit/{Id:int?}"
+﻿@page "/Tenant/TenantEdit/{Id:int?}"
 
 @attribute [Authorize]
 
@@ -24,7 +24,7 @@
 
         <MudButton OnClick="Save" Variant="Variant.Filled" Color="Color.Primary">Save</MudButton>
 
-        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" @onclick='() => Nav.NavigateTo("/Account/Tenant/Tenants")'>
+        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" @onclick='() => Nav.NavigateTo("/Tenant/Tenants")'>
             Cancel
         </MudButton>
 
@@ -51,7 +51,7 @@
         }
 
         Snackbar.Add(response.Message, Severity.Success);
-        Nav.NavigateTo("/Account/Tenant/Tenants");
+        Nav.NavigateTo("/Tenant/Tenants");
 
     }
 }

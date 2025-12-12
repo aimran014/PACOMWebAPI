@@ -1,4 +1,4 @@
-﻿@page "/Account/Tenant/TenantCreate"
+﻿@page "/Tenant/TenantCreate"
 
 @attribute [Authorize]
 
@@ -24,7 +24,7 @@
     <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveOrganization" Class="me-2">
         Save
     </MudButton>
-    <MudButton Color="Color.Secondary" Variant="Variant.Outlined" OnClick="@(() => NavManager.NavigateTo("/Account/Tenant/Tenants"))">
+    <MudButton Color="Color.Secondary" Variant="Variant.Outlined" OnClick="@(() => NavManager.NavigateTo("/Tenant/Tenants"))">
         Back
     </MudButton>
 </MudPaper>
@@ -44,6 +44,6 @@
         Db.Organizations.Add(organization);
         await Db.SaveChangesAsync();
         Snackbar.Add("Organization Add successfully.", Severity.Success);
-        NavManager.NavigateTo("/Account/Tenant/Tenants");
+        NavManager.NavigateTo("/Tenant/Tenants");
     }
 }

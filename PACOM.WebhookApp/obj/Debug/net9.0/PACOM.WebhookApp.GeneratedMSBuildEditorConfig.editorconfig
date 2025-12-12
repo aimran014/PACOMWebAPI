@@ -45,10 +45,6 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBY2NvdW50XFBhZ2VzXENvbmZpcm1FbWFpbENoYW5nZS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/Lenovo Z50/Source/Repos/PACOMWebAPI/PACOM.WebhookApp/Components/Account/Pages/Events/Event.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBY2NvdW50XFBhZ2VzXEV2ZW50c1xFdmVudC5yYXpvcg==
-build_metadata.AdditionalFiles.CssScope = 
-
 [C:/Users/Lenovo Z50/Source/Repos/PACOMWebAPI/PACOM.WebhookApp/Components/Account/Pages/ExternalLogin.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBY2NvdW50XFBhZ2VzXEV4dGVybmFsTG9naW4ucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
@@ -155,34 +151,6 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/Lenovo Z50/Source/Repos/PACOMWebAPI/PACOM.WebhookApp/Components/Account/Pages/ResetPasswordConfirmation.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBY2NvdW50XFBhZ2VzXFJlc2V0UGFzc3dvcmRDb25maXJtYXRpb24ucmF6b3I=
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/Lenovo Z50/Source/Repos/PACOMWebAPI/PACOM.WebhookApp/Components/Account/Pages/Tenant/TenantCreate.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBY2NvdW50XFBhZ2VzXFRlbmFudFxUZW5hbnRDcmVhdGUucmF6b3I=
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/Lenovo Z50/Source/Repos/PACOMWebAPI/PACOM.WebhookApp/Components/Account/Pages/Tenant/TenantEdit.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBY2NvdW50XFBhZ2VzXFRlbmFudFxUZW5hbnRFZGl0LnJhem9y
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/Lenovo Z50/Source/Repos/PACOMWebAPI/PACOM.WebhookApp/Components/Account/Pages/Tenant/Tenants.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBY2NvdW50XFBhZ2VzXFRlbmFudFxUZW5hbnRzLnJhem9y
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/Lenovo Z50/Source/Repos/PACOMWebAPI/PACOM.WebhookApp/Components/Account/Pages/Users/UserDetails.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBY2NvdW50XFBhZ2VzXFVzZXJzXFVzZXJEZXRhaWxzLnJhem9y
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/Lenovo Z50/Source/Repos/PACOMWebAPI/PACOM.WebhookApp/Components/Account/Pages/Users/UserRole.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBY2NvdW50XFBhZ2VzXFVzZXJzXFVzZXJSb2xlLnJhem9y
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/Lenovo Z50/Source/Repos/PACOMWebAPI/PACOM.WebhookApp/Components/Account/Pages/Users/Users.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBY2NvdW50XFBhZ2VzXFVzZXJzXFVzZXJzLnJhem9y
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/Lenovo Z50/Source/Repos/PACOMWebAPI/PACOM.WebhookApp/Components/Account/Pages/Users/UserSelectTenant.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBY2NvdW50XFBhZ2VzXFVzZXJzXFVzZXJTZWxlY3RUZW5hbnQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/Lenovo Z50/Source/Repos/PACOMWebAPI/PACOM.WebhookApp/Components/Account/Pages/_Imports.razor]

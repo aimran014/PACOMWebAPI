@@ -1,4 +1,4 @@
-﻿@page "/Account/Users/UserDetails/{UserId}"
+﻿@page "/Users/UserDetails/{UserId}"
 @* @attribute [Authorize(Roles = "Admin")] *@
 
 @attribute [Authorize]
@@ -35,7 +35,7 @@ else
         @(isDisabled ? "Enable Account" : "Disable Account")
     </a>
 
-    <a class="btn btn-secondary" href="@($"/Account/Users/Users")">
+    <a class="btn btn-secondary" href="@($"/Users/Users")">
         Back
     </a>
 }

@@ -1,4 +1,4 @@
-﻿@page "/Account/Tenant/Tenants"
+﻿@page "/Tenant/Tenants"
 
 @attribute [Authorize]
 
@@ -96,14 +96,14 @@
         }
     }
 
-    void Edit(int id) => NavManager.NavigateTo($"/Account/Tenant/TenantEdit/{id}");
+    void Edit(int id) => NavManager.NavigateTo($"/Tenant/TenantEdit/{id}");
 
     private void Create()
     {
         if (!IsAdmin)
             return; // do nothing if not Admin
 
-        NavManager.NavigateTo("/Account/Tenant/TenantCreate");
+        NavManager.NavigateTo("/Tenant/TenantCreate");
     }
 
     async Task Delete(int id)
