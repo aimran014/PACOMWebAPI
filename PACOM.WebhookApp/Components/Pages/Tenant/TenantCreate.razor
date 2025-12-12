@@ -1,0 +1,49 @@
+﻿@page "/Account/Tenant/TenantCreate"
+
+@attribute [Authorize]
+
+@using Microsoft.AspNetCore.Authorization
+@using PACOM.WebhookApp.Data
+
+@inject ApplicationDbContext Db
+@inject NavigationManager NavManager
+@inject ISnackbar Snackbar
+@rendermode InteractiveServer
+
+<MudPaper Class="pa-6 mx-auto" Style="max-width:600px;">
+    <MudText Typo="Typo.h5" Class="mb-4">Create Organization</MudText>
+
+    <MudTextField @bind-Value="organization.Name" Label="Organization Name" Variant="Variant.Outlined" Class="mb-3" Required="true" />
+    <MudTextField @bind-Value="organization.Code" Label="Organization Code" Variant="Variant.Outlined" Class="mb-3" Required="true" />
+    <MudTextField @bind-Value="organization.Description" Label="Description" Variant="Variant.Outlined" Class="mb-3" />
+    <MudTextField @bind-Value="organization.Token" Label="Token" Variant="Variant.Outlined" Class="mb-3" />
+    <MudTextField @bind-Value="organization.url" Label="Webhook Link" Variant="Variant.Outlined" Class="mb-3" />
+
+    <MudSwitch T="bool" @bind-Checked="organization.IsActive" Label="Active" Color="Color.Primary" Class="mb-4" />
+
+    <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveOrganization" Class="me-2">
+        Save
+    </MudButton>
+    <MudButton Color="Color.Secondary" Variant="Variant.Outlined" OnClick="@(() => NavManager.NavigateTo("/Account/Tenant/Tenants"))">
+        Back
+    </MudButton>
+</MudPaper>
+
+@code {
+    private Organization organization = new()
+    {
+        CreatedAt = DateTime.UtcNow,
+        UpdatedAt = DateTime.UtcNow
+    };
+
+    private async Task SaveOrganization()
+    {
+        organization.CreatedAt = DateTime.UtcNow;
+        organization.UpdatedAt = DateTime.UtcNow;
+
+        Db.Organizations.Add(organization);
+        await Db.SaveChangesAsync();
+        Snackbar.Add("Organization Add successfully.", Severity.Success);
+        NavManager.NavigateTo("/Account/Tenant/Tenants");
+    }
+}

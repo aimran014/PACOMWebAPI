@@ -1,0 +1,129 @@
+﻿@page "/Account/Users/UserRoles/{userId}"
+@* @attribute [Authorize(Roles = "Admin")] *@
+
+@attribute [Authorize]
+
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using PACOM.WebhookApp.Data
+@using MudBlazor
+
+@inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
+@inject NavigationManager NavManager
+@inject ApplicationDbContext Db
+@rendermode InteractiveServer
+
+<MudPaper Class="pa-6 mx-auto" Style="max-width:650px;">
+    <MudText Typo="Typo.h5" Class="mb-4">Manage User Access</MudText>
+
+    @if (user == null)
+    {
+        <MudProgressCircular Indeterminate="true" />
+    }
+    else
+    {
+        <MudTextField @bind-Value="user.Email" Label="Email" Variant="Variant.Outlined" Class="mb-3" />
+        <MudTextField @bind-Value="user.UserName" Label="Username" Variant="Variant.Outlined" Class="mb-3" />
+
+        <MudDivider Class="my-4" />
+
+        <MudText Typo="Typo.subtitle1">Role</MudText>
+        <MudRadioGroup T="string" @bind-SelectedOption="selectedRole"
+                       Orientation="Orientation.Vertical"
+                       Class="mb-4">
+            @foreach (var role in allRoles)
+            {
+                <MudRadio T="string" Value="@role.Name">@role.Name</MudRadio>
+            }
+        </MudRadioGroup>
+
+        <MudDivider Class="my-4" />
+
+        <UserSelectTenant></UserSelectTenant>
+@*         <MudText Typo="Typo.subtitle1">Tenant</MudText>
+        <MudSelect T="int" @bind-Value="selectedOrganization"
+                   Label="Select Organization"
+                   Variant="Variant.Outlined"
+                   Class="mb-4">
+            @foreach (var org in organizations)
+            {
+                <MudSelectItem T="int" Value="@org.Id">@org.Name</MudSelectItem>
+            }
+        </MudSelect>
+
+ *@
+
+        <MudDivider Class="my-4" />
+
+        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveChanges" Class="me-2">
+            Save Changes
+        </MudButton>
+
+        <MudButton Color="Color.Secondary" Variant="Variant.Outlined"
+                   OnClick="@(() => NavManager.NavigateTo("/Account/Users/Users"))">
+            Back
+        </MudButton>
+    }
+</MudPaper>
+
+@code {
+    [Parameter] public string UserId { get; set; } = "";
+    ApplicationUser? user;
+
+    List<IdentityRole> allRoles = new();
+    string? selectedRole = "";
+
+    List<Organization> allOrganizations = new();
+    IEnumerable<int> selectedOrganizations = new List<int>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await UserManager.FindByIdAsync(UserId);
+        if (user == null) return;
+
+        // Load Roles
+        allRoles = RoleManager.Roles.ToList();
+        var userRoles = await UserManager.GetRolesAsync(user);
+        selectedRole = userRoles.FirstOrDefault();
+
+        // Load all active organizations
+        allOrganizations = Db.Organizations.ToList();
+        selectedOrganizations = allOrganizations.Select(c => c.Id).ToList();
+    }
+
+    async Task SaveChanges()
+    {
+        if (user == null) return;
+
+        // Update Role
+        var currentRoles = await UserManager.GetRolesAsync(user);
+        await UserManager.RemoveFromRolesAsync(user, currentRoles);
+
+        if (!string.IsNullOrEmpty(selectedRole))
+        {
+            if (!await RoleManager.RoleExistsAsync(selectedRole))
+                await RoleManager.CreateAsync(new IdentityRole(selectedRole));
+
+            await UserManager.AddToRoleAsync(user, selectedRole);
+        }
+
+        // Update OrganizationRoles
+        var existingOrgs = Db.OrganizationRoles.Where(x => x.UserId == UserId);
+        Db.OrganizationRoles.RemoveRange(existingOrgs);
+
+        foreach (var orgId in selectedOrganizations)
+        {
+            Db.OrganizationRoles.Add(new OrganizationRoles
+            {
+                UserId = UserId,
+                OrganizationId = orgId
+            });
+        }
+
+        await Db.SaveChangesAsync();
+        await UserManager.UpdateAsync(user);
+
+        NavManager.NavigateTo("/Account/Users/Users");
+    }
+}

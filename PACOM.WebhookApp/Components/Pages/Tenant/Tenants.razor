@@ -1,0 +1,121 @@
+﻿@page "/Account/Tenant/Tenants"
+
+@attribute [Authorize]
+
+@using Microsoft.AspNetCore.Authorization
+@using PACOM.WebhookApp.Data
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using MudBlazor
+@using System.Security.Claims
+
+@inject ApplicationDbContext Db
+@inject NavigationManager NavManager
+@inject IJSRuntime JsRuntime
+@inject AuthenticationStateProvider AuthStateProvider
+@rendermode InteractiveServer
+
+<MudGrid>
+
+    <MudItem xs="12" sm="2">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="() => Create()">
+                New Organization
+            </MudButton>
+
+    </MudItem>
+
+    <MudItem xs="12">
+
+        <MudTable Items="organizations" Dense="true">
+
+            <HeaderContent>
+
+                <MudTh>Name</MudTh>
+                <MudTh>Code</MudTh>
+                <MudTh>Webhook Link</MudTh>
+                <MudTh>Status</MudTh>
+                <MudTh>Action</MudTh>
+
+            </HeaderContent>
+
+            <RowTemplate>
+
+                <MudTd>@context.Name</MudTd>
+                <MudTd>@context.Code</MudTd>
+                <MudTd>@context.url</MudTd>
+                <MudTd>@(context.IsActive ? "Active" : "Inactive")</MudTd>
+                <MudTd>
+                    <MudButton Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled" Class="me-1" @onclick="() => Edit(context.Id)">Edit</MudButton>
+                    <MudButton Color="Color.Error" Size="Size.Small" Variant="Variant.Filled" Class="me-1" @onclick="() => Delete(context.Id)">Delete</MudButton>
+
+                </MudTd>
+
+            </RowTemplate>
+
+        </MudTable>
+
+    </MudItem>
+
+</MudGrid>
+
+
+@code {
+    List<Organization> organizations = [];
+    OrganizationRoles organizationRoles = new();
+    private bool IsAdmin = false;
+    private ClaimsPrincipal? user;
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        user = authState.User;
+
+        if (!user.Identity?.IsAuthenticated ?? true)
+            return;
+
+        // Check role via claims
+        IsAdmin = user.IsInRole("Admin");
+
+        if (IsAdmin)
+        {
+            organizations = await Db.Organizations.ToListAsync();
+        }
+        else
+        {
+            // Non-admin: load only the organization linked to the user
+            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!string.IsNullOrEmpty(userId))
+            {
+                organizationRoles = await Db.OrganizationRoles
+                    .FirstOrDefaultAsync(or => or.UserId == userId) ?? new OrganizationRoles();
+
+                organizations = await Db.Organizations
+                    .Where(o => o.Id == organizationRoles.OrganizationId)
+                    .ToListAsync();
+            }
+        }
+    }
+
+    void Edit(int id) => NavManager.NavigateTo($"/Account/Tenant/TenantEdit/{id}");
+
+    private void Create()
+    {
+        if (!IsAdmin)
+            return; // do nothing if not Admin
+
+        NavManager.NavigateTo("/Account/Tenant/TenantCreate");
+    }
+
+    async Task Delete(int id)
+    {
+        if (!IsAdmin)
+            return; // do nothing if not Admin
+
+        var org = await Db.Organizations.FindAsync(id);
+        if (org is null) return;
+        Db.Organizations.Remove(org);
+        await Db.SaveChangesAsync();
+        organizations = Db.Organizations.ToList();
+        StateHasChanged();
+    }
+}

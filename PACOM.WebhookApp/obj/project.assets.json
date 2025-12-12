@@ -9053,25 +9053,28 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\MSI Laptop\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\Lenovo Z50\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {},
+    "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\MSI Laptop\\source\\repos\\PACOMWebAPI\\PACOM.WebhookApp\\PACOM.WebhookApp.csproj",
+      "projectUniqueName": "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.WebhookApp\\PACOM.WebhookApp.csproj",
       "projectName": "PACOM.WebhookApp",
-      "projectPath": "C:\\Users\\MSI Laptop\\source\\repos\\PACOMWebAPI\\PACOM.WebhookApp\\PACOM.WebhookApp.csproj",
-      "packagesPath": "C:\\Users\\MSI Laptop\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\MSI Laptop\\source\\repos\\PACOMWebAPI\\PACOM.WebhookApp\\obj\\",
+      "projectPath": "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.WebhookApp\\PACOM.WebhookApp.csproj",
+      "packagesPath": "C:\\Users\\Lenovo Z50\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.WebhookApp\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
+        "C:\\Program Files (x86)\\Microsoft\\Xamarin\\NuGet\\"
       ],
       "configFilePaths": [
-        "C:\\Users\\MSI Laptop\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\Lenovo Z50\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Xamarin.Offline.config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
@@ -9097,7 +9100,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.300"
+      "SdkAnalysisLevel": "10.0.100"
     },
     "frameworks": {
       "net9.0": {
@@ -9163,7 +9166,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
