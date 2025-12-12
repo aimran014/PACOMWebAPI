@@ -1,0 +1,53 @@
+﻿@page "/Events/TransactionEvent"
+@attribute [Authorize]
+
+@using Microsoft.AspNetCore.Authorization
+@using MudBlazor
+@using System.Globalization
+
+<h3>Transaction Event</h3>
+
+<select @bind="_selectedCountry" class="form-select">
+    <option value="">-- Select Country --</option>
+    <option>Malaysia</option>
+    <option>Singapore</option>
+    <option>Indonesia</option>
+    <option>Thailand</option>
+    <option>Philippines</option>
+</select>
+
+<br/>
+
+<MudSelect T="string"
+           @bind-Value="_selectedState"
+           Label="Select a State"
+           FullWidth="true"
+           Variant="Variant.Outlined"
+           Clearable="true">
+    @foreach (var state in _states)
+    {
+        <MudSelectItem T="string" Value="@state">@state</MudSelectItem>
+    }
+</MudSelect>
+
+<p>Selected: @_selectedCountry</p>
+
+@code {
+    private string _selectedCountry;
+    private string _selectedState { get; set; }
+
+    private List<string> _states = new List<string>
+    {
+        "Alabama", "Alaska", "American Samoa", "Arizona"
+    };
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        _states = new List<string>
+        {
+            "Alabama", "Alaska", "American Samoa", "Arizona"
+        };
+    }
+
+}
