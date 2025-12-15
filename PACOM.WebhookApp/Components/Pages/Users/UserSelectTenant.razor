@@ -1,4 +1,5 @@
-﻿<MudSelect @bind-Value="_selectedState" Label="Select a State" FullWidth="_fullWidth" FitContent="_fitContent" Variant="Variant.Outlined" ShrinkLabel>
+﻿@rendermode InteractiveServer
+<MudSelect @bind-Value="_selectedState" Label="Select a State" FullWidth="_fullWidth" FitContent="_fitContent" Variant="Variant.Outlined" ShrinkLabel>
     @foreach (var state in _states)
     {
         <MudSelectItem Value="@state">@state</MudSelectItem>

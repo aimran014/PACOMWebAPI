@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.TransactionsService\\PACOM.TransactionsService.csproj": {}
+    "D:\\Prymax Technologies\\PACOM Webhook Management\\PACOMWebAPI\\PACOM.TransactionsService\\PACOM.TransactionsService.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.TransactionsService\\PACOM.TransactionsService.csproj": {
+    "D:\\Prymax Technologies\\PACOM Webhook Management\\PACOMWebAPI\\PACOM.TransactionsService\\PACOM.TransactionsService.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.TransactionsService\\PACOM.TransactionsService.csproj",
+        "projectUniqueName": "D:\\Prymax Technologies\\PACOM Webhook Management\\PACOMWebAPI\\PACOM.TransactionsService\\PACOM.TransactionsService.csproj",
         "projectName": "PACOM.TransactionsService",
-        "projectPath": "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.TransactionsService\\PACOM.TransactionsService.csproj",
+        "projectPath": "D:\\Prymax Technologies\\PACOM Webhook Management\\PACOMWebAPI\\PACOM.TransactionsService\\PACOM.TransactionsService.csproj",
         "packagesPath": "C:\\Users\\Lenovo Z50\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.TransactionsService\\obj\\",
+        "outputPath": "D:\\Prymax Technologies\\PACOM Webhook Management\\PACOMWebAPI\\PACOM.TransactionsService\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
@@ -35,8 +35,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.WebhookApp\\PACOM.WebhookApp.csproj": {
-                "projectPath": "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.WebhookApp\\PACOM.WebhookApp.csproj"
+              "D:\\Prymax Technologies\\PACOM Webhook Management\\PACOMWebAPI\\PACOM.WebhookApp\\PACOM.WebhookApp.csproj": {
+                "projectPath": "D:\\Prymax Technologies\\PACOM Webhook Management\\PACOMWebAPI\\PACOM.WebhookApp\\PACOM.WebhookApp.csproj"
               }
             }
           }
@@ -86,14 +86,14 @@
         }
       }
     },
-    "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.WebhookApp\\PACOM.WebhookApp.csproj": {
+    "D:\\Prymax Technologies\\PACOM Webhook Management\\PACOMWebAPI\\PACOM.WebhookApp\\PACOM.WebhookApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.WebhookApp\\PACOM.WebhookApp.csproj",
+        "projectUniqueName": "D:\\Prymax Technologies\\PACOM Webhook Management\\PACOMWebAPI\\PACOM.WebhookApp\\PACOM.WebhookApp.csproj",
         "projectName": "PACOM.WebhookApp",
-        "projectPath": "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.WebhookApp\\PACOM.WebhookApp.csproj",
+        "projectPath": "D:\\Prymax Technologies\\PACOM Webhook Management\\PACOMWebAPI\\PACOM.WebhookApp\\PACOM.WebhookApp.csproj",
         "packagesPath": "C:\\Users\\Lenovo Z50\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Lenovo Z50\\Source\\Repos\\PACOMWebAPI\\PACOM.WebhookApp\\obj\\",
+        "outputPath": "D:\\Prymax Technologies\\PACOM Webhook Management\\PACOMWebAPI\\PACOM.WebhookApp\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",

@@ -19,7 +19,7 @@
 
         <MudTextField Label="Webhook Link" @bind-Value="organization.url" Required="true" />
 
-        <MudSwitch T="bool" Label="Active" @bind-Checked="organization.IsActive" Color="Color.Primary" />
+    <MudSwitch T="bool" Label="Active" @bind-Value="organization.IsActive" Color="Color.Primary" />
         <MudText>Active</MudText>
 
         <MudButton OnClick="Save" Variant="Variant.Filled" Color="Color.Primary">Save</MudButton>

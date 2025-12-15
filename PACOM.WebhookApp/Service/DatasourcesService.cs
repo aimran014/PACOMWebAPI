@@ -587,7 +587,7 @@ namespace PACOM.WebhookApp.Service
                     ? $"Found {listEvents.Count} unprocessed activity event(s)."
                     : "No unprocessed activity events found.";
 
-                response.Data = listEvents;
+                response.Data = listEvents.OrderBy(e => e.UtcTime).ToList();
             }
             catch (Exception ex)
             {

@@ -12,6 +12,7 @@
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IUserStore<ApplicationUser> UserStore
+@inject RoleManager<IdentityRole> RoleManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IEmailSender<ApplicationUser> EmailSender
 @inject ILogger<Register> Logger
@@ -104,6 +105,7 @@
 </MudContainer>
 
 @code {
+    List<IdentityRole> allRoles = new();
     private IEnumerable<IdentityError>? identityErrors;
 
     [SupplyParameterFromForm]
@@ -147,7 +149,19 @@
                 new() { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl });
         }
 
-        await SignInManager.SignInAsync(user, isPersistent: false);
+        allRoles = RoleManager.Roles.ToList();
+        var defaultRole = allRoles.FirstOrDefault()?.NormalizedName;
+
+        if (string.IsNullOrWhiteSpace(defaultRole))
+        {
+            throw new InvalidOperationException("No roles are configured in the system.");
+        }
+
+        // Assign role BEFORE sign-in
+        await UserManager.AddToRoleAsync(user, defaultRole);
+
+        // Sign in after role assignment
+        await SignInManager.SignInAsync(user, isPersistent: false); ;
         RedirectManager.RedirectTo(ReturnUrl);
     }
 

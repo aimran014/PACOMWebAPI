@@ -11,34 +11,63 @@
 @inject NavigationManager NavManager
 @rendermode InteractiveServer
 
-<h3>User Details</h3>
 
-@if (user == null)
-{
-    <p>Loading...</p>
-}
-else
-{
-    <dl class="row">
-        <dt class="col-sm-3">Email</dt>
-        <dd class="col-sm-9">@user.Email</dd>
+<MudPaper Class="pa-4" Elevation="2">
 
-        <dt class="col-sm-3">Username</dt>
-        <dd class="col-sm-9">@user.UserName</dd>
+    <MudText Typo="Typo.h4" GutterBottom="true">User Details</MudText>
 
-        <dt class="col-sm-3">Account Status</dt>
-        <dd class="col-sm-9">@status</dd>
-    </dl>
+    @if (user == null)
+    {
+        <MudText>Loading...</MudText>
+    }
+    else
+    {
+        <MudGrid>
+            <MudItem xs="12" sm="3">
+                <MudText Color="Color.Primary" Typo="Typo.subtitle1">Email</MudText>
+            </MudItem>
+            <MudItem xs="12" sm="9">
+                <MudText>@user.Email</MudText>
+            </MudItem>
 
+            <MudItem xs="12" sm="3" Class="mt-2">
+                <MudText Color="Color.Primary" Typo="Typo.subtitle1">Username</MudText>
+            </MudItem>
+            <MudItem xs="12" sm="9" Class="mt-2">
+                <MudText>@user.UserName</MudText>
+            </MudItem>
 
-    <a href="#" class="btn btn-warning" @onclick="ToggleLockout" @onclick:preventDefault="true">
-        @(isDisabled ? "Enable Account" : "Disable Account")
-    </a>
+            <MudItem xs="12" sm="3" Class="mt-2">
+                <MudText Color="Color.Primary" Typo="Typo.subtitle1">Account Status</MudText>
+            </MudItem>
+            <MudItem xs="12" sm="9" Class="mt-2">
+                <MudText>@status</MudText>
+            </MudItem>
 
-    <a class="btn btn-secondary" href="@($"/Users/Users")">
-        Back
-    </a>
-}
+            <MudItem xs="12" sm="3" Class="mt-2">
+                <MudText Color="Color.Primary" Typo="Typo.subtitle1">Email Confirmed</MudText>
+            </MudItem>
+            <MudItem xs="12" sm="9" Class="mt-2">
+                <MudText>@user.EmailConfirmed</MudText>
+            </MudItem>
+        </MudGrid>
+
+        <MudDivider Class="my-4" />
+
+        <MudButton Color="Color.Error"
+                   Variant="Variant.Filled"
+                   OnClick="ToggleLockout">
+            @(isDisabled ? "Enable Account" : "Disable Account")
+        </MudButton>
+
+        <MudButton Color="Color.Default"
+                   Variant="Variant.Filled"
+                   Class="ml-3"
+                   Href="/Users/Users">
+            Back
+        </MudButton>
+    }
+</MudPaper>
 
 
 @code {

@@ -16,6 +16,11 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @rendermode InteractiveServer
 
+<PageTitle>Tenant</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-4">Tenant</MudText>
+
+
 <MudGrid>
 
     <MudItem xs="12" sm="2">
@@ -44,7 +49,7 @@
                 <MudTd>@context.Name</MudTd>
                 <MudTd>@context.Code</MudTd>
                 <MudTd>@context.url</MudTd>
-                <MudTd>@(context.IsActive ? "Active" : "Inactive")</MudTd>
+                <MudTd>@(context.IsActive == true ? "Active" : "Inactive")</MudTd>
                 <MudTd>
                     <MudButton Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled" Class="me-1" @onclick="() => Edit(context.Id)">Edit</MudButton>
                     <MudButton Color="Color.Error" Size="Size.Small" Variant="Variant.Filled" Class="me-1" @onclick="() => Delete(context.Id)">Delete</MudButton>
@@ -65,6 +70,7 @@
     OrganizationRoles organizationRoles = new();
     private bool IsAdmin = false;
     private ClaimsPrincipal? user;
+
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();

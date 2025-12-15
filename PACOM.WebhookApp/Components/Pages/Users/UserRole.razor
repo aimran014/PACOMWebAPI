@@ -29,30 +29,29 @@
         <MudDivider Class="my-4" />
 
         <MudText Typo="Typo.subtitle1">Role</MudText>
-        <MudRadioGroup T="string" @bind-SelectedOption="selectedRole"
+        <MudRadioGroup T="string" @bind-Value="selectedRole"
                        Orientation="Orientation.Vertical"
                        Class="mb-4">
             @foreach (var role in allRoles)
             {
-                <MudRadio T="string" Value="@role.Name">@role.Name</MudRadio>
+                <MudRadio T="string" Value="@role.Name">@role.NormalizedName</MudRadio>
             }
         </MudRadioGroup>
 
         <MudDivider Class="my-4" />
 
-        <UserSelectTenant></UserSelectTenant>
-@*         <MudText Typo="Typo.subtitle1">Tenant</MudText>
-        <MudSelect T="int" @bind-Value="selectedOrganization"
-                   Label="Select Organization"
+        <MudText Typo="Typo.subtitle1">Tenant</MudText>
+        <MudSelect T="int" @bind-Value="selectedOrganizations"
+                   Label="Select Tenant"
                    Variant="Variant.Outlined"
                    Class="mb-4">
-            @foreach (var org in organizations)
+            @foreach (var org in allOrganizations)
             {
                 <MudSelectItem T="int" Value="@org.Id">@org.Name</MudSelectItem>
             }
         </MudSelect>
 
- *@
+
 
         <MudDivider Class="my-4" />
 
@@ -60,8 +59,7 @@
             Save Changes
         </MudButton>
 
-        <MudButton Color="Color.Secondary" Variant="Variant.Outlined"
-                   OnClick="@(() => NavManager.NavigateTo("/Users/Users"))">
+        <MudButton Color="Color.Secondary" Variant="Variant.Outlined" OnClick="@(() => NavManager.NavigateTo("/Users/Users"))">
             Back
         </MudButton>
     }
@@ -75,7 +73,7 @@
     string? selectedRole = "";
 
     List<Organization> allOrganizations = new();
-    IEnumerable<int> selectedOrganizations = new List<int>();
+    int selectedOrganizations { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -89,7 +87,8 @@
 
         // Load all active organizations
         allOrganizations = Db.Organizations.ToList();
-        selectedOrganizations = allOrganizations.Select(c => c.Id).ToList();
+        var existingOrg = Db.OrganizationRoles.FirstOrDefault(x => x.UserId == UserId);
+        selectedOrganizations = allOrganizations.FirstOrDefault(x => x.Id == existingOrg?.OrganizationId)?.Id ?? 0;
     }
 
     async Task SaveChanges()
@@ -109,17 +108,17 @@
         }
 
         // Update OrganizationRoles
-        var existingOrgs = Db.OrganizationRoles.Where(x => x.UserId == UserId);
-        Db.OrganizationRoles.RemoveRange(existingOrgs);
+        // Remove any existing organization
+        var existingOrg = Db.OrganizationRoles.FirstOrDefault(x => x.UserId == UserId);
+        if (existingOrg != null)
+            Db.OrganizationRoles.Remove(existingOrg);
 
-        foreach (var orgId in selectedOrganizations)
+        // Add the new organization
+        Db.OrganizationRoles.Add(new OrganizationRoles
         {
-            Db.OrganizationRoles.Add(new OrganizationRoles
-            {
-                UserId = UserId,
-                OrganizationId = orgId
-            });
-        }
+            UserId = UserId,
+            OrganizationId = selectedOrganizations
+        });
 
         await Db.SaveChangesAsync();
         await UserManager.UpdateAsync(user);

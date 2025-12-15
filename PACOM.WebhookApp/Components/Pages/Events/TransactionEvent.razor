@@ -4,50 +4,184 @@
 @using Microsoft.AspNetCore.Authorization
 @using MudBlazor
 @using System.Globalization
+@using PACOM.WebhookApp.Data
+@using PACOM.WebhookApp.Service
+@using static PACOM.WebhookApp.Components.Pages.Events.Event
 
-<h3>Transaction Event</h3>
+@inject DatasourcesService DatasourceService
 
-<select @bind="_selectedCountry" class="form-select">
-    <option value="">-- Select Country --</option>
-    <option>Malaysia</option>
-    <option>Singapore</option>
-    <option>Indonesia</option>
-    <option>Thailand</option>
-    <option>Philippines</option>
-</select>
+<PageTitle>Event</PageTitle>
 
-<br/>
+<MudText Typo="Typo.h4" Class="mb-4">Events</MudText>
 
-<MudSelect T="string"
-           @bind-Value="_selectedState"
-           Label="Select a State"
-           FullWidth="true"
-           Variant="Variant.Outlined"
-           Clearable="true">
-    @foreach (var state in _states)
-    {
-        <MudSelectItem T="string" Value="@state">@state</MudSelectItem>
-    }
-</MudSelect>
+<MudPaper Class="pa-4 ma-2">
+    <MudGrid>
 
-<p>Selected: @_selectedCountry</p>
+        <MudItem xs="4">
+            <MudDatePicker Label="Find Date" Editable="true" @bind-Date="_selectedDate" Mask="@(new DateMask("dd/MM/yyyy"))" DateFormat="MM/dd/yyyy" Placeholder="en-US Date" Variant="Variant.Filled" />
+        </MudItem>
+
+        <MudItem xs="4">
+            <MudTimePicker Label="Start Time" @bind-Time="_selectedStartTime" AmPm="false" Variant="Variant.Filled" />
+        </MudItem>
+
+        <MudItem xs="4">
+            <MudTimePicker Label="End Time" @bind-Time="_selectedEndTime" AmPm="false" Variant="Variant.Filled" />
+        </MudItem>
+
+        <MudItem xs="6">
+            <MudTextField T="string" Label="Search Cardholder" @bind-Value="_SearchCardholder" Variant="Variant.Outlined" Clearable="true" Immediate="true" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Placeholder="Name / Card No / MyKad" Class="mb-3" />
+        </MudItem>
+
+        <MudItem xs="4">
+            <MudSelect T="string" @bind-Value="_selectedOrganization" Label="Select a Tenant" FullWidth="true" Variant="Variant.Outlined" Clearable="true">
+                @if (organizations != null)
+                {
+                    @foreach (var item in organizations)
+                    {
+                        <MudSelectItem T="string" Value="@item.Name">@item.Name</MudSelectItem>
+                    }
+                }
+
+            </MudSelect>
+
+        </MudItem>
+
+
+        <MudItem xs="2">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Search" OnClick="OnSearchAsync">
+                Search
+            </MudButton>
+        </MudItem>
+
+        <MudItem xs="6">
+            <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.FilePresent">
+                Export Excel
+            </MudButton>
+
+            <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.PictureAsPdf" Class="ml-3">
+                Export PDF
+            </MudButton>
+        </MudItem>
+
+    </MudGrid>
+
+</MudPaper>
+
+<MudPaper Class="pa-4 ma-2">
+    <MudTable Items="@Transaction" Hover="true" Breakpoint="Breakpoint.Sm" T="ActivityEvent" Elevation="0" Bordered="true" @bind-RowsPerPage="_rowPerPage" @bind-CurrentPage="_currentPage" ServerData="null">
+
+        <HeaderContent>
+            <MudTh Style="width:15%;">Datetime</MudTh>
+            <MudTh Style="width:25%;">Event Type</MudTh>
+            <MudTh Style="width:20%;">Reader</MudTh>
+            <MudTh Style="width:15%;">Cardholder Name</MudTh>
+            <MudTh Style="width:15%;">Jabatan/Agensi</MudTh>
+            <MudTh Style="width:10%;">Card.No</MudTh>
+        </HeaderContent>
+
+        <RowTemplate>
+            <MudTd DataLabel="Datetime">@context.UtcTime.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
+            <MudTd DataLabel="Event Type">
+                @(context.EventName?.Split('.')?.Last())
+            </MudTd>
+            <MudTd DataLabel="Reader">@context.ReaderName</MudTd>
+            <MudTd DataLabel="Cardholder Name">@context.UserName</MudTd>
+            <MudTd DataLabel="Jabatan/Agensi">@context.Organization</MudTd>
+            <MudTd DataLabel="Card.No">@context.CredentialNumber</MudTd>
+        </RowTemplate>
+
+        <PagerContent>
+            <MudTablePager />
+            <MudText Typo="Typo.caption" Class="ml-2">
+                Page @(_currentPage + 1) of @((Transaction?.Count / _rowPerPage) + ((Transaction?.Count % _rowPerPage) > 0 ? 1 : 0))
+            </MudText>
+        </PagerContent>
+
+        <NoRecordsContent>
+            <MudText>No event logs found.</MudText>
+        </NoRecordsContent>
+    </MudTable>
+</MudPaper>
 
 @code {
-    private string _selectedCountry;
-    private string _selectedState { get; set; }
+    private DateTime? _selectedDate = DateTime.Today;
+    private string? _selectedOrganization { get; set; }
+    private TimeSpan? _selectedStartTime = new TimeSpan(0, 0, 0);       // 00:00:00
+    private TimeSpan? _selectedEndTime = new TimeSpan(23, 59, 59);      // 23:59:59    private TimeSpan? _selectedEndTime = DateTime.Now.TimeOfDay;
+    private int _currentPage = 0;
+    private int _rowPerPage = 5;
+    private string? _SearchCardholder { get; set; }
 
-    private List<string> _states = new List<string>
-    {
-        "Alabama", "Alaska", "American Samoa", "Arizona"
-    };
+    private DateTime? GetStartDatetime => _selectedDate.HasValue && _selectedStartTime.HasValue ? _selectedDate.Value.Date + _selectedStartTime.Value : null;
+    private DateTime? GetEndDatetime => _selectedDate.HasValue && _selectedEndTime.HasValue ? _selectedDate.Value.Date + _selectedEndTime.Value : null;
 
-    protected override void OnInitialized()
+    private List<Organization>? organizations { get; set; }
+    private List<ActivityEvent>? Transaction { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
     {
         base.OnInitialized();
-        _states = new List<string>
+        await LoadOrganizationsAsync();
+        await OnSearchAsync();
+    }
+
+    private async Task LoadOrganizationsAsync()
+    {
+        var response = await DatasourceService.ListOrganizationAsync();
+        if (response.Error == 0)
         {
-            "Alabama", "Alaska", "American Samoa", "Arizona"
-        };
+            organizations = response.Data;
+        }
+        else
+        {
+            organizations = new List<Organization>();
+            Console.WriteLine(response.Message);
+        }
+    }
+
+    private async Task OnSearchAsync()
+    {
+        if (GetStartDatetime == null || GetEndDatetime == null)
+            return;
+
+        // Convert to UTC before API call
+        var utcStart = GetStartDatetime.Value.ToUniversalTime();
+        var utcEnd = GetEndDatetime.Value.ToUniversalTime();
+
+        // Call API
+        var response = await DatasourceService.ListActivityEventAsync(utcStart, utcEnd, _selectedOrganization);
+        if (response.Error == 0)
+        {
+
+            if (!string.IsNullOrWhiteSpace(_SearchCardholder))
+            {
+                var keyword = _SearchCardholder.Trim();
+
+                response.Data = response.Data?
+                    .Where(c =>
+                        (!string.IsNullOrEmpty(c.UserName) &&
+                         c.UserName.Contains(keyword, StringComparison.OrdinalIgnoreCase)) ||
+
+                        (!string.IsNullOrEmpty(c.CredentialNumber) &&
+                         c.CredentialNumber.Contains(keyword, StringComparison.OrdinalIgnoreCase)) ||
+
+                        (!string.IsNullOrEmpty(c.MykadNumber) &&
+                         c.MykadNumber.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+                    )
+                    .ToList();
+            }
+
+            Transaction = response.Data;
+
+        }
+        else
+        {
+            Transaction = new List<ActivityEvent>();
+            Console.WriteLine(response.Message);
+        }
+        StateHasChanged();
     }
 
 }
