@@ -2,10 +2,16 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
+using OfficeOpenXml;
 using PACOM.WebhookApp.Components;
 using PACOM.WebhookApp.Components.Account;
 using PACOM.WebhookApp.Data;
 using PACOM.WebhookApp.Service;
+
+// Set the EPPlus license once at startup
+ExcelPackage.License.SetNonCommercialPersonal("Your Name");
+// or for org:
+// ExcelPackage.License.SetNonCommercialOrganization("Your Org Name");
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -54,6 +60,11 @@ builder.Services.AddScoped<DatasourcesService>();
 
 // ✅ Register background worker
 //builder.Services.AddHostedService<WebhookBackgroundService>();
+
+// ✅ Register Export Services
+builder.Services.AddScoped<ExcelExportService>();
+builder.Services.AddScoped<PdfExportService>();
+
 
 var app = builder.Build();
 

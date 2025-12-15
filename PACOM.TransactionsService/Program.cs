@@ -21,6 +21,7 @@ builder.Services.AddDbContextFactory<ApplicationDbContext>(options =>
 builder.Services.AddScoped<DatasourcesService>();
 
 
+
 // ✅ Add this line:
 builder.Services.AddHttpClient();
 

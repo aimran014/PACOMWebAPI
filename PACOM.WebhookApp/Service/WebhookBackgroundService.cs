@@ -80,7 +80,7 @@ namespace PACOM.WebhookApp.Service
                 if (!unsentRecords.Any())
                 {
                     //Resent failed record
-                    await ResentFailedRecords();
+                    //await ResentFailedRecords();
 
                     //Console.WriteLine("🔍 No new unsent records.");
                     return;
@@ -112,21 +112,26 @@ namespace PACOM.WebhookApp.Service
                     CustomDataEventType = JsonSerializer.Serialize(r.CustomDataEventType),
                     CustomDataUDFType = JsonSerializer.Serialize(r.CustomDataUDFType),
                     MykadNumber = r.MykadNumber,
-                    IsProcessed = null
+                    IsProcessed = false
                 }).ToList();
 
                 // direct save without sent webhook when return failed.
-                if (!await ManageWebhookOrganization(log))
-                {
-                    foreach (var record in log)
-                    {
-                        var result = _datasourcesService.StoreActivityEventAsync(record);
-                    }
+                //if (!await ManageWebhookOrganization(log))
+                //{
+                //    foreach (var record in log)
+                //    {
+                //        var result = _datasourcesService.StoreActivityEventAsync(record);
+                //    }
 
+                //}
+                foreach (var record in log)
+                {
+                    await _datasourcesService.StoreActivityEventAsync(record);
                 }
 
-                //Resent failed record
-                await ResentFailedRecords();
+
+                ////Resent failed record
+                //await ResentFailedRecords();
 
             }
             catch (Exception ex)

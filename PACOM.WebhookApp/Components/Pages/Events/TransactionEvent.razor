@@ -8,6 +8,8 @@
 @using PACOM.WebhookApp.Service
 @using static PACOM.WebhookApp.Components.Pages.Events.Event
 
+@inject ExcelExportService ExcelExportService
+@inject IJSRuntime JS
 @inject DatasourcesService DatasourceService
 
 <PageTitle>Event</PageTitle>
@@ -30,7 +32,7 @@
         </MudItem>
 
         <MudItem xs="6">
-            <MudTextField T="string" Label="Search Cardholder" @bind-Value="_SearchCardholder" Variant="Variant.Outlined" Clearable="true" Immediate="true" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Placeholder="Name / Card No / MyKad" Class="mb-3" />
+            <MudTextField T="string" Label="Search Cardholder" @bind-Value="_SearchCardholder" Variant="Variant.Outlined" Clearable="true" Immediate="true" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search" Placeholder="Name / Card No / MyKad / Reader" Class="mb-3" />
         </MudItem>
 
         <MudItem xs="4">
@@ -55,7 +57,7 @@
         </MudItem>
 
         <MudItem xs="6">
-            <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.FilePresent">
+            <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.FilePresent" OnClick="ExportExcel">
                 Export Excel
             </MudButton>
 
@@ -81,7 +83,9 @@
         </HeaderContent>
 
         <RowTemplate>
-            <MudTd DataLabel="Datetime">@context.UtcTime.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
+            <MudTd DataLabel="Datetime">
+                @TimeZoneInfo.ConvertTimeFromUtc(context.UtcTime, TimeZoneInfo.FindSystemTimeZoneById("Singapore Standard Time")).ToString("dd-MM-yyyy HH:mm:ss")
+            </MudTd>
             <MudTd DataLabel="Event Type">
                 @(context.EventName?.Split('.')?.Last())
             </MudTd>
@@ -167,6 +171,9 @@
                         (!string.IsNullOrEmpty(c.CredentialNumber) &&
                          c.CredentialNumber.Contains(keyword, StringComparison.OrdinalIgnoreCase)) ||
 
+                        (!string.IsNullOrEmpty(c.ReaderName) &&
+                         c.ReaderName.Contains(keyword, StringComparison.OrdinalIgnoreCase)) ||
+
                         (!string.IsNullOrEmpty(c.MykadNumber) &&
                          c.MykadNumber.Contains(keyword, StringComparison.OrdinalIgnoreCase))
                     )
@@ -182,6 +189,23 @@
             Console.WriteLine(response.Message);
         }
         StateHasChanged();
+    }
+
+    private async Task ExportExcel()
+    {
+        if (Transaction == null || !Transaction.Any())
+            return;
+
+        var bytes = ExcelExportService.ExportTransactionEvents(Transaction);
+
+        var fileName = $"TransactionEvents_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+
+        await JS.InvokeVoidAsync(
+            "downloadFile",
+            fileName,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            Convert.ToBase64String(bytes)
+        );
     }
 
 }

@@ -55,28 +55,6 @@ namespace PACOM.WebhookApp.Service
             {
                 conn.Open();
 
-                string query = @"WITH TransactionLog AS (SELECT l.Version, CAST(l.Id AS varchar(36)) AS Id, l.Scope, s.Name AS ScopeName, o.name as OrganizationName,
-                                CAST(EventId AS varchar(36)) AS EventId, 
-                                e.FullName AS EventName,
-                                CAST(l.UserId AS varchar(36)) AS UserId, 
-                                u.FirstName AS UserName, u.FirstName, u.LastName, 
-                                CAST(CredentialId AS varchar(36)) AS CredentialId, 
-                                c.CardNumber AS CredentialNumber, 
-                                [Value], CAST(AreaFromId AS varchar(36)) AS AreaFromId, 
-                                CAST(AreaToId AS varchar(36)) AS AreaToId, 
-                                CustomDataString, u.CustomData AS CustomDataUDF,
-                                [time] AS UtcTime 
-                                FROM [ArcoDbStatusView].[dbo].[ActivityLog] l
-                                LEFT JOIN [ArcoDbView].[dbo].[Organisations] o on SUBSTRING(l.Scope, 1, CHARINDEX('/', l.Scope, 2)) = o.Scope
-                                LEFT JOIN [ArcoDbView].[dbo].[Sites] s ON l.Scope = s.Scope AND s.IsDeleted = 0
-                                LEFT JOIN [ArcoDbView].[dbo].[SchemaEvents] e ON l.EventId = e.Id
-                                LEFT JOIN [ArcoDbView].[dbo].[User] u ON l.UserId = u.Id
-                                LEFT JOIN [ArcoDbView].[dbo].[Credentials] c ON l.CredentialId = c.Id)
-                                SELECT TOP(1) Version, Id, Scope, ScopeName, OrganizationName, EventId, EventName, UserId, UserName, FirstName, LastName, CredentialId, CredentialNumber, Value, AreaFromId, AreaToId, CustomDataString, CustomDataUDF, UtcTime
-                                FROM TransactionLog
-                                WHERE AreaFromId IS NOT NULL AND CONVERT(date, UtcTime) = @GetTodayUtcTime
-                                ORDER BY Version ASC";
-
                 //string query = @"WITH TransactionLog AS (SELECT l.Version, CAST(l.Id AS varchar(36)) AS Id, l.Scope, s.Name AS ScopeName, o.name as OrganizationName,
                 //                CAST(EventId AS varchar(36)) AS EventId, 
                 //                e.FullName AS EventName,
@@ -96,8 +74,30 @@ namespace PACOM.WebhookApp.Service
                 //                LEFT JOIN [ArcoDbView].[dbo].[Credentials] c ON l.CredentialId = c.Id)
                 //                SELECT TOP(1) Version, Id, Scope, ScopeName, OrganizationName, EventId, EventName, UserId, UserName, FirstName, LastName, CredentialId, CredentialNumber, Value, AreaFromId, AreaToId, CustomDataString, CustomDataUDF, UtcTime
                 //                FROM TransactionLog
-                //                WHERE AreaFromId IS NOT NULL AND Version = '2561039984480210432'
+                //                WHERE AreaFromId IS NOT NULL AND CONVERT(date, UtcTime) = @GetTodayUtcTime
                 //                ORDER BY Version ASC";
+
+                string query = @"WITH TransactionLog AS (SELECT l.Version, CAST(l.Id AS varchar(36)) AS Id, l.Scope, s.Name AS ScopeName, o.name as OrganizationName,
+                                CAST(EventId AS varchar(36)) AS EventId, 
+                                e.FullName AS EventName,
+                                CAST(l.UserId AS varchar(36)) AS UserId, 
+                                u.FirstName AS UserName, u.FirstName, u.LastName, 
+                                CAST(CredentialId AS varchar(36)) AS CredentialId, 
+                                c.CardNumber AS CredentialNumber, 
+                                [Value], CAST(AreaFromId AS varchar(36)) AS AreaFromId, 
+                                CAST(AreaToId AS varchar(36)) AS AreaToId, 
+                                CustomDataString, u.CustomData AS CustomDataUDF,
+                                [time] AS UtcTime 
+                                FROM [ArcoDbStatusView].[dbo].[ActivityLog] l
+                                LEFT JOIN [ArcoDbView].[dbo].[Organisations] o on SUBSTRING(l.Scope, 1, CHARINDEX('/', l.Scope, 2)) = o.Scope
+                                LEFT JOIN [ArcoDbView].[dbo].[Sites] s ON l.Scope = s.Scope AND s.IsDeleted = 0
+                                LEFT JOIN [ArcoDbView].[dbo].[SchemaEvents] e ON l.EventId = e.Id
+                                LEFT JOIN [ArcoDbView].[dbo].[User] u ON l.UserId = u.Id
+                                LEFT JOIN [ArcoDbView].[dbo].[Credentials] c ON l.CredentialId = c.Id)
+                                SELECT TOP(1) Version, Id, Scope, ScopeName, OrganizationName, EventId, EventName, UserId, UserName, FirstName, LastName, CredentialId, CredentialNumber, Value, AreaFromId, AreaToId, CustomDataString, CustomDataUDF, UtcTime
+                                FROM TransactionLog
+                                WHERE AreaFromId IS NOT NULL AND Version = '2558214280790552064'
+                                ORDER BY Version ASC";
 
                 var data = conn.Query<EventLogModel>(query, new { GetTodayUtcTime  = TodayUtcTime }).FirstOrDefault();
 
