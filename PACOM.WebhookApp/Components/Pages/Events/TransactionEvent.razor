@@ -2,15 +2,20 @@
 @attribute [Authorize]
 
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
 @using MudBlazor
 @using System.Globalization
 @using PACOM.WebhookApp.Data
 @using PACOM.WebhookApp.Service
 @using static PACOM.WebhookApp.Components.Pages.Events.Event
+@using System.Security.Claims
 
+@inject UserManager<ApplicationUser> UserManager
 @inject ExcelExportService ExcelExportService
 @inject IJSRuntime JS
 @inject DatasourcesService DatasourceService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ApplicationDbContext Db
 
 <PageTitle>Event</PageTitle>
 
@@ -36,7 +41,7 @@
         </MudItem>
 
         <MudItem xs="4">
-            <MudSelect T="string" @bind-Value="_selectedOrganization" Label="Select a Tenant" FullWidth="true" Variant="Variant.Outlined" Clearable="true">
+            <MudSelect T="string" @bind-Value="_selectedOrganization" Label="Select a Tenant" FullWidth="true" Variant="Variant.Outlined" Clearable="true" Disabled="@(!_isOrgSelectable)">
                 @if (organizations != null)
                 {
                     @foreach (var item in organizations)
@@ -109,6 +114,7 @@
 </MudPaper>
 
 @code {
+    private bool _isOrgSelectable = true;   // controls MudSelect disabled
     private DateTime? _selectedDate = DateTime.Today;
     private string? _selectedOrganization { get; set; }
     private TimeSpan? _selectedStartTime = new TimeSpan(0, 0, 0);       // 00:00:00
@@ -129,6 +135,7 @@
         base.OnInitialized();
         await LoadOrganizationsAsync();
         await OnSearchAsync();
+        await SetUserOrganizationAsync();
     }
 
     private async Task LoadOrganizationsAsync()
@@ -142,6 +149,39 @@
         {
             organizations = new List<Organization>();
             Console.WriteLine(response.Message);
+        }
+    }
+
+    private async Task SetUserOrganizationAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        // Example role check
+        var isAdmin = user.IsInRole("Admin");
+
+        if (!isAdmin)
+        {
+            _isOrgSelectable = false;
+
+            // Get organization from claims (adjust claim type if needed)
+            var userId = UserManager.GetUserId(user);
+
+            var orgRole = Db.OrganizationRoles
+                .FirstOrDefault(c => c.UserId == userId);
+
+            if (orgRole != null && organizations?.Any() == true)
+            {
+                _selectedOrganization = organizations
+                    .FirstOrDefault(x => x.Id == orgRole.OrganizationId)
+                    ?.Name;
+            }
+
+            // Fallback if mapping not found
+            if (string.IsNullOrEmpty(_selectedOrganization) && organizations?.Any() == true)
+            {
+                _selectedOrganization = organizations.First().Name;
+            }
         }
     }
 

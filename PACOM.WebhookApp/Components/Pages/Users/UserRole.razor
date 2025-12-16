@@ -6,9 +6,11 @@
 @using Microsoft.AspNetCore.Authorization
 @using Microsoft.AspNetCore.Identity
 @using PACOM.WebhookApp.Data
+@using PACOM.WebhookApp.Service
 @using MudBlazor
 
 @inject UserManager<ApplicationUser> UserManager
+@inject DatasourcesService DatasourceService
 @inject RoleManager<IdentityRole> RoleManager
 @inject NavigationManager NavManager
 @inject ApplicationDbContext Db
@@ -122,6 +124,15 @@
 
         await Db.SaveChangesAsync();
         await UserManager.UpdateAsync(user);
+
+        // Add Audit Log entry here if needed
+        await DatasourceService.AuditTrailAsync(new AuditTrails
+        {
+            Action = "Update User Role",
+            UserName = user.UserName ?? "System",
+            Timestamp = DateTime.UtcNow,
+            Details = $"Updated roles and organization for user {user.UserName} (ID: {user.Id})"
+        });
 
         NavManager.NavigateTo("/Users/Users");
     }

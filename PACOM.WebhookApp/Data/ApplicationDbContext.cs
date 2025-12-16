@@ -13,5 +13,7 @@ namespace PACOM.WebhookApp.Data
         public DbSet<Organization> Organizations { get; set; }
         public DbSet<OrganizationRoles> OrganizationRoles { get; set; }
         public DbSet<ActivityEvent> ActivityEvents { get; set; }
+        public DbSet<AuditTrails> AuditTrails { get; set; }
+
         }
 }

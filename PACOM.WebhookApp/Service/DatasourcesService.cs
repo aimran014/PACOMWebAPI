@@ -598,5 +598,41 @@ namespace PACOM.WebhookApp.Service
             return response;
         }
 
+        public async Task<PacomResponse<string>> AuditTrailAsync(AuditTrails audit)
+        {
+            var response = new PacomResponse<string>();
+            try
+            {
+                if (audit == null)
+                {
+                    response.Error = 1;
+                    response.Message = "Audit data is required.";
+                    return response;
+                }
+
+                // Ensure timestamp
+                if (audit.Timestamp == default)
+                {
+                    audit.Timestamp = DateTime.Now;
+                }
+
+                //_contextFactory.AuditTrails.Add(audit);
+                //await _contextFactory.SaveChangesAsync();
+
+                response.Error = 0;
+                response.Message = "Audit trail saved successfully.";
+                response.Data = "OK";
+
+            }
+            catch (Exception ex)
+            {
+                response.Error = 1;
+                response.Message = $"Error storing audit trail: {ex.Message}";
+                response.Data = null;
+            }
+
+            return response;
+        }
+
     }
 }

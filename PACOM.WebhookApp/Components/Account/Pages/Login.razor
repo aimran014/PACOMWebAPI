@@ -5,9 +5,11 @@
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Identity
 @using PACOM.WebhookApp.Data
+@using PACOM.WebhookApp.Service
 @using MudBlazor
 @using PACOM.WebhookApp.Components.Layout
 
+@inject DatasourcesService DatasourceService
 @inject SignInManager<ApplicationUser> SignInManager
 @inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
@@ -133,24 +135,66 @@
     public async Task LoginUser()
     {
         var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+
+        // Record timestamp once
+        var now = DateTime.UtcNow;
+
         if (result.Succeeded)
         {
             Logger.LogInformation("User logged in.");
+
+            // 🔐 Audit log
+            await DatasourceService.AuditTrailAsync(new AuditTrails
+            {
+                Action = "USER_LOGIN_SUCCESS",
+                UserName = Input.Email,
+                Timestamp = now,
+                Details = $"User '{Input.Email}' logged in successfully."
+            });
+
             RedirectManager.RedirectTo("/");
         }
         else if (result.RequiresTwoFactor)
         {
+                        // 🔐 Audit log
+            await DatasourceService.AuditTrailAsync(new AuditTrails
+            {
+                Action = "USER_LOGIN_2FA_REQUIRED",
+                UserName = Input.Email,
+                Timestamp = now,
+                Details = $"User '{Input.Email}' requires two-factor authentication."
+            });
+
+
             RedirectManager.RedirectTo(
                 "Account/LoginWith2fa",
                 new() { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
         }
         else if (result.IsLockedOut)
         {
+            // 🔐 Audit log
+            await DatasourceService.AuditTrailAsync(new AuditTrails
+            {
+                Action = "USER_LOCKED_OUT",
+                UserName = Input.Email,
+                Timestamp = now,
+                Details = $"User '{Input.Email}' account is locked out."
+            });
+
             Logger.LogWarning("User account locked out.");
             RedirectManager.RedirectTo("Account/Lockout");
         }
         else
         {
+            // 🔐 Audit log
+            await DatasourceService.AuditTrailAsync(new AuditTrails
+            {
+                Action = "USER_LOGIN_FAILED",
+                UserName = Input.Email,
+                Timestamp = now,
+                Details = $"Failed login attempt for '{Input.Email}'."
+            });
+
             errorMessage = "Error: Invalid login attempt.";
         }
     }

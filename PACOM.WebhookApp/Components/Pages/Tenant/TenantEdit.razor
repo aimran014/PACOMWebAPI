@@ -5,7 +5,9 @@
 @using Microsoft.AspNetCore.Authorization
 @using PACOM.WebhookApp.Data
 @using PACOM.WebhookApp.Service
+@using System.Security.Claims
 
+@inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ApplicationDbContext Db
 @inject NavigationManager Nav
 @inject ISnackbar Snackbar
@@ -49,6 +51,21 @@
             Snackbar.Add(response.Message, Severity.Error);
             return;
         }
+
+        // Get logged-in user safely (Blazor way)
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        var userName = user.Identity?.Name ?? "System";
+
+        // ✅ Correct audit log
+        await OrgService.AuditTrailAsync(new AuditTrails
+        {
+            Action = "UPDATE_TENANT",
+            UserName = userName,
+            Timestamp = DateTime.UtcNow,
+            Details = $"Updated tenant '{organization.Name}' (ID: {organization.Id})"
+        });
 
         Snackbar.Add(response.Message, Severity.Success);
         Nav.NavigateTo("/Tenant/Tenants");
