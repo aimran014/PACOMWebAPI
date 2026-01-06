@@ -1,5 +1,4 @@
 ﻿@page "/Tenant/Tenants"
-
 @attribute [Authorize]
 
 @using Microsoft.AspNetCore.Authorization
@@ -16,137 +15,213 @@
 @inject NavigationManager NavManager
 @inject IJSRuntime JsRuntime
 @inject AuthenticationStateProvider AuthStateProvider
+@inject ISnackbar Snackbar
 @rendermode InteractiveServer
 
-<PageTitle>Tenant</PageTitle>
+<PageTitle>Tenant Management</PageTitle>
 
-<MudText Typo="Typo.h4" Class="mb-4">Tenant</MudText>
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    @* HEADER SECTION *@
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h5">Tenant Management</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Overview of registered organizations and webhooks.</MudText>
+        </div>
 
-
-<MudGrid>
-
-    <MudItem xs="12" sm="2">
         @if (IsAdmin)
         {
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick="() => Create()">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.AddBusiness"
+                       OnClick="Create">
                 New Organization
             </MudButton>
         }
+    </div>
 
-    </MudItem>
+    @* DATA TABLE *@
+    <MudTable Items="organizations"
+              Dense="true"
+              Hover="true"
+              Striped="true"
+              Bordered="false"
+              Elevation="3"
+              Filter="new Func<Organization, bool>(FilterFunc)"
+              Loading="@isLoading">
 
-    <MudItem xs="12">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">Organizations</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="searchString"
+                          Placeholder="Search tenants..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          IconSize="Size.Medium"
+                          Class="mt-0" />
+        </ToolBarContent>
 
-        <MudTable Items="organizations" Dense="true">
+        <HeaderContent>
+            <MudTh>Organization Identity</MudTh>
+            <MudTh>Webhook Endpoint</MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh Style="text-align:right">Actions</MudTh>
+        </HeaderContent>
 
-            <HeaderContent>
+        <RowTemplate>
+            @* Identity Column *@
+            <MudTd DataLabel="Identity">
+                <div class="d-flex align-center">
+                    <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small" Class="mr-3">
+                        @context.Name?.FirstOrDefault().ToString().ToUpper()
+                    </MudAvatar>
+                    <div>
+                        <MudText Typo="Typo.body2" Style="font-weight: 500;">@context.Name</MudText>
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Text" Color="Color.Default">@context.Code</MudChip>
+                    </div>
+                </div>
+            </MudTd>
 
-                <MudTh>Name</MudTh>
-                <MudTh>Code</MudTh>
-                <MudTh>Webhook Link</MudTh>
-                <MudTh>Status</MudTh>
-                <MudTh>Action</MudTh>
+            @* URL Column *@
+            <MudTd DataLabel="Webhook">
+                <MudLink Href="@context.url" Target="_blank" Underline="Underline.None" Typo="Typo.body2">
+                    @context.url
+                </MudLink>
+            </MudTd>
 
-            </HeaderContent>
+            @* Status Column *@
+            <MudTd DataLabel="Status">
+                @if (context.IsActive)
+                {
+                    <MudChip T="string" Color="Color.Success" Size="Size.Small" Icon="@Icons.Material.Filled.CheckCircle">Active</MudChip>
+                }
+                else
+                {
+                    <MudChip T="string" Color="Color.Error" Size="Size.Small" Icon="@Icons.Material.Filled.DoNotDisturb">Inactive</MudChip>
+                }
+            </MudTd>
 
-            <RowTemplate>
+            @* Actions Column *@
+            <MudTd DataLabel="Action" Style="text-align:right">
+                <MudTooltip Text="Edit Configuration">
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                   Color="Color.Primary"
+                                   Size="Size.Small"
+                                   OnClick="() => Edit(context.Id)" />
+                </MudTooltip>
 
-                <MudTd>@context.Name</MudTd>
-                <MudTd>@context.Code</MudTd>
-                <MudTd>@context.url</MudTd>
-                <MudTd>@(context.IsActive == true ? "Active" : "Inactive")</MudTd>
-                <MudTd>
-                    <MudButton Size="Size.Small" Color="Color.Primary" Variant="Variant.Filled" Class="me-1" @onclick="() => Edit(context.Id)">Edit</MudButton>
+                @if (IsAdmin)
+                {
+                    <MudTooltip Text="Delete Tenant">
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="() => Delete(context.Id)" />
+                    </MudTooltip>
+                }
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
 
-                    @if (IsAdmin)
-                    {
-                        <MudButton Color="Color.Error" Size="Size.Small" Variant="Variant.Filled" Class="me-1" @onclick="() => Delete(context.Id)">Delete</MudButton>
-                    }
-
-                </MudTd>
-
-            </RowTemplate>
-
-        </MudTable>
-
-    </MudItem>
-
-</MudGrid>
+</MudContainer>
 
 
 @code {
     List<Organization> organizations = [];
-    OrganizationRoles organizationRoles = new();
-    private bool IsAdmin = false;
+    bool IsAdmin = false;
+    bool isLoading = true;
+    string searchString = "";
+
+    // Authorization Context
     private ClaimsPrincipal? user;
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        user = authState.User;
+        await LoadData();
+    }
 
-        if (!user.Identity?.IsAuthenticated ?? true)
-            return;
-
-        // Check role via claims
-        IsAdmin = user.IsInRole("Admin");
-
-        if (IsAdmin)
+    private async Task LoadData()
+    {
+        try
         {
-            organizations = await Db.Organizations.ToListAsync();
-        }
-        else
-        {
-            // Non-admin: load only the organization linked to the user
-            var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!string.IsNullOrEmpty(userId))
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            user = authState.User;
+
+            if (!user.Identity?.IsAuthenticated ?? true) return;
+
+            IsAdmin = user.IsInRole("Admin");
+
+            if (IsAdmin)
             {
-                organizationRoles = await Db.OrganizationRoles
-                    .FirstOrDefaultAsync(or => or.UserId == userId) ?? new OrganizationRoles();
+                organizations = await Db.Organizations.ToListAsync();
+            }
+            else
+            {
+                // Non-admin logic
+                var userId = user.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    var userRole = await Db.OrganizationRoles
+                        .FirstOrDefaultAsync(or => or.UserId == userId);
 
-                organizations = await Db.Organizations
-                    .Where(o => o.Id == organizationRoles.OrganizationId)
-                    .ToListAsync();
+                    if (userRole != null)
+                    {
+                        organizations = await Db.Organizations
+                            .Where(o => o.Id == userRole.OrganizationId)
+                            .ToListAsync();
+                    }
+                }
             }
         }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
-
-    private void Create()
+    // Search Logic
+    private bool FilterFunc(Organization element)
     {
-        if (!IsAdmin)
-            return; // do nothing if not Admin
-
-        NavManager.NavigateTo("/Tenant/TenantCreate");
+        if (string.IsNullOrWhiteSpace(searchString)) return true;
+        if (element.Name?.Contains(searchString, StringComparison.OrdinalIgnoreCase) == true) return true;
+        if (element.Code?.Contains(searchString, StringComparison.OrdinalIgnoreCase) == true) return true;
+        return false;
     }
 
+    private void Create() => NavManager.NavigateTo("/Tenant/TenantCreate");
+
+    private void Edit(int id) => NavManager.NavigateTo($"/Tenant/TenantEdit/{id}");
 
     async Task Delete(int id)
     {
-        if (!IsAdmin)
-            return; // do nothing if not Admin
+        if (!IsAdmin) return;
+
+        // Optional: In a real app, you would add a Dialog Service confirmation here
 
         var org = await Db.Organizations.FindAsync(id);
         if (org is null) return;
-        Db.Organizations.Remove(org);
-        await Db.SaveChangesAsync();
-        organizations = Db.Organizations.ToList();
 
-        // 🔐 Audit log
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-
-        await DatasourceService.AuditTrailAsync(new AuditTrails
+        try
         {
-            Action = "DELETE_TENANT",
-            UserName = user.Identity?.Name ?? "System",
-            Timestamp = DateTime.UtcNow,
-            Details = $"Deleted tenant '{org.Name}' (ID: {org.Id})"
-        });
+            Db.Organizations.Remove(org);
+            await Db.SaveChangesAsync();
 
-        StateHasChanged();
+            // Refresh list locally
+            organizations.Remove(org);
+
+            // Audit Log
+            await DatasourceService.AuditTrailAsync(new AuditTrails
+            {
+                Action = "DELETE_TENANT",
+                UserName = user?.Identity?.Name ?? "System",
+                Timestamp = DateTime.UtcNow,
+                Details = $"Deleted tenant '{org.Name}' (ID: {org.Id})"
+            });
+
+            Snackbar.Add($"Tenant '{org.Name}' deleted.", Severity.Success);
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error deleting tenant: {ex.Message}", Severity.Error);
+        }
     }
-
-    void Edit(int id) => NavManager.NavigateTo($"/Tenant/TenantEdit/{id}");
-
 }

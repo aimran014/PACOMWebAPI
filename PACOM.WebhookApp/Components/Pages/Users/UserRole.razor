@@ -1,6 +1,4 @@
 ﻿@page "/Users/UserRoles/{userId}"
-@* @attribute [Authorize(Roles = "Admin")] *@
-
 @attribute [Authorize]
 
 @using Microsoft.AspNetCore.Authorization
@@ -14,126 +12,256 @@
 @inject RoleManager<IdentityRole> RoleManager
 @inject NavigationManager NavManager
 @inject ApplicationDbContext Db
+@inject ISnackbar Snackbar
 @rendermode InteractiveServer
 
-<MudPaper Class="pa-6 mx-auto" Style="max-width:650px;">
-    <MudText Typo="Typo.h5" Class="mb-4">Manage User Access</MudText>
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <MudText Typo="Typo.h5" Class="mb-4">User Management</MudText>
 
-    @if (user == null)
+    @if (isLoading)
     {
-        <MudProgressCircular Indeterminate="true" />
+        <MudGrid>
+            <MudItem xs="12" sm="4"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="300px" /></MudItem>
+            <MudItem xs="12" sm="8"><MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="300px" /></MudItem>
+        </MudGrid>
+    }
+    else if (user == null)
+    {
+        <MudAlert Severity="Severity.Error">User not found.</MudAlert>
     }
     else
     {
-        <MudTextField @bind-Value="user.Email" Label="Email" Variant="Variant.Outlined" Class="mb-3" />
-        <MudTextField @bind-Value="user.UserName" Label="Username" Variant="Variant.Outlined" Class="mb-3" />
+        <MudForm @ref="form" @bind-IsValid="@success">
+            <MudGrid>
+                @* COLUMN 1: Editable Profile *@
+                <MudItem xs="12" md="4">
+                    <MudCard Elevation="3" Class="h-100">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">Profile Information</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent Class="d-flex flex-column gap-4">
 
-        <MudDivider Class="my-4" />
+                            <div class="d-flex justify-center mb-2">
+                                <MudAvatar Color="Color.Primary" Style="height:80px; width:80px; font-size:2rem;">
+                                    @user.UserName?.ToUpper().FirstOrDefault()
+                                </MudAvatar>
+                            </div>
 
-        <MudText Typo="Typo.subtitle1">Role</MudText>
-        <MudRadioGroup T="string" @bind-Value="selectedRole"
-                       Orientation="Orientation.Vertical"
-                       Class="mb-4">
-            @foreach (var role in allRoles)
-            {
-                <MudRadio T="string" Value="@role.Name">@role.NormalizedName</MudRadio>
-            }
-        </MudRadioGroup>
+                            <MudTextField @bind-Value="user.UserName"
+                                          Label="Username"
+                                          Variant="Variant.Outlined"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Person"
+                                          Required="true"
+                                          RequiredError="Username is required!" />
 
-        <MudDivider Class="my-4" />
+                            <MudTextField @bind-Value="user.Email"
+                                          Label="Email Address"
+                                          Variant="Variant.Outlined"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Email"
+                                          Required="true"
+                                          RequiredError="Email is required!"
+                                          InputType="InputType.Email" />
 
-        <MudText Typo="Typo.subtitle1">Tenant</MudText>
-        <MudSelect T="int" @bind-Value="selectedOrganizations"
-                   Label="Select Tenant"
-                   Variant="Variant.Outlined"
-                   Class="mb-4">
-            @foreach (var org in allOrganizations)
-            {
-                <MudSelectItem T="int" Value="@org.Id">@org.Name</MudSelectItem>
-            }
-        </MudSelect>
+                            <MudAlert Severity="Severity.Warning" Variant="Variant.Text" Dense="true" Class="mt-2">
+                                Changing these fields may require the user to re-login.
+                            </MudAlert>
 
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
 
+                @* COLUMN 2: Permissions *@
+                <MudItem xs="12" md="8">
+                    <MudCard Elevation="3" Class="h-100">
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">Access & Permissions</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
 
-        <MudDivider Class="my-4" />
+                        <MudDivider />
 
-        <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveChanges" Class="me-2">
-            Save Changes
-        </MudButton>
+                        <MudCardContent>
+                            <MudGrid>
+                                @* Role Selection *@
+                                <MudItem xs="12">
+                                    <MudSelect T="string" @bind-Value="selectedRole"
+                                               Label="System Role"
+                                               AnchorOrigin="Origin.BottomCenter"
+                                               Variant="Variant.Outlined"
+                                               StartIcon="@Icons.Material.Filled.Security">
+                                        @foreach (var role in allRoles)
+                                        {
+                                            <MudSelectItem Value="@role.Name">
+                                                @role.Name
+                                            </MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
 
-        <MudButton Color="Color.Secondary" Variant="Variant.Outlined" OnClick="@(() => NavManager.NavigateTo("/Users/Users"))">
-            Back
-        </MudButton>
+                                @* Tenant Selection *@
+                                <MudItem xs="12">
+                                    <MudSelect T="int" @bind-Value="selectedOrganizations"
+                                               Label="Assigned Tenant"
+                                               Variant="Variant.Outlined"
+                                               AnchorOrigin="Origin.BottomCenter"
+                                               StartIcon="@Icons.Material.Filled.Business">
+                                        <MudSelectItem Value="0">-- No Organization --</MudSelectItem>
+                                        @foreach (var org in allOrganizations)
+                                        {
+                                            <MudSelectItem Value="@org.Id">@org.Name</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                            </MudGrid>
+                        </MudCardContent>
+
+                        <MudCardActions Class="d-flex justify-end pa-4 gap-2 mt-auto">
+                            <MudButton Variant="Variant.Text"
+                                       OnClick="@(() => NavManager.NavigateTo("/Users/Users"))">
+                                Cancel
+                            </MudButton>
+
+                            <MudButton Color="Color.Primary"
+                                       Variant="Variant.Filled"
+                                       StartIcon="@Icons.Material.Filled.Save"
+                                       OnClick="SaveChanges"
+                                       Disabled="@(isSaving || !success)">
+                                @(isSaving ? "Saving..." : "Save All Changes")
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            </MudGrid>
+        </MudForm>
     }
-</MudPaper>
+</MudContainer>
 
 @code {
     [Parameter] public string UserId { get; set; } = "";
+
+    MudForm form;
+    bool success;
     ApplicationUser? user;
+    bool isLoading = true;
+    bool isSaving = false;
 
     List<IdentityRole> allRoles = new();
-    string? selectedRole = "";
+    string? selectedRole;
 
     List<Organization> allOrganizations = new();
     int selectedOrganizations { get; set; }
 
+    // Backup original values to detect changes
+    string originalEmail = "";
+    string originalUserName = "";
+
     protected override async Task OnInitializedAsync()
     {
-        user = await UserManager.FindByIdAsync(UserId);
-        if (user == null) return;
+        try
+        {
+            user = await UserManager.FindByIdAsync(UserId);
+            if (user == null) return;
 
-        // Load Roles
-        allRoles = RoleManager.Roles.ToList();
-        var userRoles = await UserManager.GetRolesAsync(user);
-        selectedRole = userRoles.FirstOrDefault();
+            // Capture original values
+            originalEmail = user.Email;
+            originalUserName = user.UserName;
 
-        // Load all active organizations
-        allOrganizations = Db.Organizations.ToList();
-        var existingOrg = Db.OrganizationRoles.FirstOrDefault(x => x.UserId == UserId);
-        selectedOrganizations = allOrganizations.FirstOrDefault(x => x.Id == existingOrg?.OrganizationId)?.Id ?? 0;
+            // Load Roles
+            allRoles = RoleManager.Roles.ToList();
+            var userRoles = await UserManager.GetRolesAsync(user);
+            selectedRole = userRoles.FirstOrDefault();
+
+            // Load all active organizations
+            allOrganizations = Db.Organizations.ToList();
+            var existingOrg = Db.OrganizationRoles.FirstOrDefault(x => x.UserId == UserId);
+            selectedOrganizations = allOrganizations.FirstOrDefault(x => x.Id == existingOrg?.OrganizationId)?.Id ?? 0;
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     async Task SaveChanges()
     {
         if (user == null) return;
+        await form.Validate();
+        if (!form.IsValid) return;
 
-        // Update Role
-        var currentRoles = await UserManager.GetRolesAsync(user);
-        await UserManager.RemoveFromRolesAsync(user, currentRoles);
+        isSaving = true;
 
-        if (!string.IsNullOrEmpty(selectedRole))
+        try
         {
-            if (!await RoleManager.RoleExistsAsync(selectedRole))
-                await RoleManager.CreateAsync(new IdentityRole(selectedRole));
+            // 1. Update Basic Profile Info (Email/Username)
+            // Only update if they actually changed to save DB calls
+            if (user.Email != originalEmail || user.UserName != originalUserName)
+            {
+                // This updates the user entity in the DB
+                var updateResult = await UserManager.UpdateAsync(user);
 
-            await UserManager.AddToRoleAsync(user, selectedRole);
+                if (!updateResult.Succeeded)
+                {
+                    var errors = string.Join(", ", updateResult.Errors.Select(e => e.Description));
+                    Snackbar.Add($"Profile Update Failed: {errors}", Severity.Error);
+                    isSaving = false;
+                    return; // Stop here if profile update fails
+                }
+            }
+
+            // 2. Update Roles
+            var currentRoles = await UserManager.GetRolesAsync(user);
+            await UserManager.RemoveFromRolesAsync(user, currentRoles);
+
+            if (!string.IsNullOrEmpty(selectedRole))
+            {
+                if (await RoleManager.RoleExistsAsync(selectedRole))
+                {
+                    await UserManager.AddToRoleAsync(user, selectedRole);
+                }
+            }
+
+            // 3. Update Tenant (Organization)
+            var existingOrg = Db.OrganizationRoles.FirstOrDefault(x => x.UserId == UserId);
+            if (existingOrg != null)
+            {
+                Db.OrganizationRoles.Remove(existingOrg);
+            }
+
+            if (selectedOrganizations > 0)
+            {
+                Db.OrganizationRoles.Add(new OrganizationRoles
+                {
+                    UserId = UserId,
+                    OrganizationId = selectedOrganizations
+                });
+            }
+
+            await Db.SaveChangesAsync();
+
+            // 4. Audit Log
+            await DatasourceService.AuditTrailAsync(new AuditTrails
+            {
+                Action = "Update User",
+                UserName = user.UserName ?? "System",
+                Timestamp = DateTime.UtcNow,
+                Details = $"Updated Profile/Roles for user {user.UserName}"
+            });
+
+            Snackbar.Add("User updated successfully.", Severity.Success);
+            NavManager.NavigateTo("/Users/Users");
         }
-
-        // Update OrganizationRoles
-        // Remove any existing organization
-        var existingOrg = Db.OrganizationRoles.FirstOrDefault(x => x.UserId == UserId);
-        if (existingOrg != null)
-            Db.OrganizationRoles.Remove(existingOrg);
-
-        // Add the new organization
-        Db.OrganizationRoles.Add(new OrganizationRoles
+        catch (Exception ex)
         {
-            UserId = UserId,
-            OrganizationId = selectedOrganizations
-        });
-
-        await Db.SaveChangesAsync();
-        await UserManager.UpdateAsync(user);
-
-        // Add Audit Log entry here if needed
-        await DatasourceService.AuditTrailAsync(new AuditTrails
+            Snackbar.Add($"Critical Error: {ex.Message}", Severity.Error);
+        }
+        finally
         {
-            Action = "Update User Role",
-            UserName = user.UserName ?? "System",
-            Timestamp = DateTime.UtcNow,
-            Details = $"Updated roles and organization for user {user.UserName} (ID: {user.Id})"
-        });
-
-        NavManager.NavigateTo("/Users/Users");
+            isSaving = false;
+        }
     }
 }

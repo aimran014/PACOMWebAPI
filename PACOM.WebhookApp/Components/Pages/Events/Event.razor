@@ -1,132 +1,277 @@
 ﻿@page "/Events/Event"
 @attribute [Authorize]
+@rendermode InteractiveServer
 
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
 @using MudBlazor
 @using System.Globalization
+@using System.IO
+@using System.Security.Claims
 
-<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-6">
+@using PACOM.WebhookApp.Data
+@using PACOM.WebhookApp.Service
+@using static PACOM.WebhookApp.Components.Pages.Events.Event
 
-    <MudText Typo="Typo.h4" Class="mb-4">Event</MudText>
+@inject UserManager<ApplicationUser> UserManager
+@inject IJSRuntime JS
+@inject DatasourcesService DatasourceService
+@inject ExcelExportService ExcelExportService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ApplicationDbContext Db
 
-    <MudGrid Class="mb-4" Spacing="2">
-        <MudItem xs="3">
-            <MudTextField @bind-Value="startDate" Label="Start Date" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.CalendarToday" />
+<PageTitle>Event Logs</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-4 mb-5">
+
+    <MudGrid Class="mb-4">
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Elevation="0" Class="pa-4 d-flex align-center border-solid border-2 mud-border-primary rounded-lg">
+                <MudIcon Icon="@Icons.Material.Filled.EventNote" Color="Color.Primary" Size="Size.Large" Class="mr-3" />
+                <div>
+                    <MudText Typo="Typo.caption">Total Events</MudText>
+                    <MudText Typo="Typo.h5">@(EventLogs?.Count ?? 0)</MudText>
+                </div>
+            </MudPaper>
         </MudItem>
-        <MudItem xs="3">
-            <MudTextField @bind-Value="endDate" Label="End Date" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.CalendarToday" />
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Elevation="0" Class="pa-4 d-flex align-center border-solid border-2 mud-border-success rounded-lg">
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" Class="mr-3" />
+                <div>
+                    <MudText Typo="Typo.caption">Access Granted</MudText>
+                    <MudText Typo="Typo.h5">@(EventLogs?.Count(x => x.EventName != null && x.EventName.Contains("Granted")) ?? 0)</MudText>
+                </div>
+            </MudPaper>
         </MudItem>
-        <MudItem xs="3">
-            <MudSelect @bind-Value="selectedAgency" Label="Jabatan/Agensi" FullWidth="true">
-                @* Add MudSelectItem components here for options *@
-            </MudSelect>
-        </MudItem>
-        <MudItem xs="3" Class="d-flex align-center">
-            <MudButton OnClick="SearchData" Variant="Variant.Filled" Color="Color.Success" Class="mr-2" Style="height:56px;">Search</MudButton>
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Elevation="0" Class="pa-4 d-flex align-center border-solid border-2 mud-border-warning rounded-lg">
+                <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Warning" Size="Size.Large" Class="mr-3" />
+                <div>
+                    <MudText Typo="Typo.caption">Alerts / Others</MudText>
+                    <MudText Typo="Typo.h5">@(EventLogs?.Count(x => x.EventName != null && !x.EventName.Contains("Granted")) ?? 0)</MudText>
+                </div>
+            </MudPaper>
         </MudItem>
     </MudGrid>
 
-    <div class="d-flex mb-4">
-        <MudButton OnClick="ExportToExcel" Variant="Variant.Filled" Color="Color.Success" Class="mr-2">Excel</MudButton>
-        <MudButton OnClick="ExportToPdf" Variant="Variant.Filled" Color="Color.Error">PDF</MudButton>
-    </div>
+    <MudExpansionPanel Text="Search Filters" Class="mb-4" IsExpanded="true" Dense="true" Elevation="3">
+        <MudGrid Class="align-center">
+            <MudItem xs="12" md="3">
+                <MudDatePicker Label="Date" @bind-Date="_selectedDate" Variant="Variant.Outlined" Margin="Margin.Dense" Color="Color.Primary" />
+            </MudItem>
+            <MudItem xs="6" md="2">
+                <MudTimePicker Label="Start Time" @bind-Time="_selectedStartTime" Variant="Variant.Outlined" Margin="Margin.Dense" />
+            </MudItem>
+            <MudItem xs="6" md="2">
+                <MudTimePicker Label="End Time" @bind-Time="_selectedEndTime" Variant="Variant.Outlined" Margin="Margin.Dense" />
+            </MudItem>
 
-    <MudTable Items="@EventLogs" Hover="true" Breakpoint="Breakpoint.Sm" T="EventLog" Elevation="0" Bordered="true">
+            <MudItem xs="12" md="3">
+                <MudSelect T="string" @bind-Value="_selectedOrganization" Label="Tenant" Variant="Variant.Outlined" Margin="Margin.Dense" AnchorOrigin="Origin.BottomCenter" Clearable="true" Disabled="@(!_isOrgSelectable)">
+                    @if (organizations != null)
+                    {
+                        @foreach (var item in organizations)
+                        {
+                            <MudSelectItem T="string" Value="@item.Name">@item.Name</MudSelectItem>
+                        }
+                    }
+                </MudSelect>
+            </MudItem>
+
+            <MudItem xs="12" md="2">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" StartIcon="@Icons.Material.Filled.Search" OnClick="OnSearchAsync">Search</MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudExpansionPanel>
+
+    <MudTable Items="@EventLogs"
+              Hover="true"
+              Striped="true"
+              Dense="true"
+              Elevation="3"
+              Loading="@_loading"
+              @bind-RowsPerPage="_rowPerPage"
+              @bind-CurrentPage="_currentPage">
+
+        <ToolBarContent>
+            <MudText Typo="Typo.h6" Class="mr-4">Transaction Logs</MudText>
+
+            <MudTextField T="string" @bind-Value="_SearchCardholder" Placeholder="Filter by Name, Card..."
+                          Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                          IconSize="Size.Medium" Class="mt-0" Clearable="true" Immediate="true"
+                          TextChanged="OnSearchAsync" />
+
+            <MudSpacer />
+            <MudDivider Vertical="true" FlexItem="true" Class="mx-4 my-2" />
+
+            <MudTooltip Text="Export Excel">
+                <MudIconButton Icon="@Icons.Custom.FileFormats.FileExcel" Color="Color.Success" OnClick="ExportExcel" />
+            </MudTooltip>
+
+            <MudTooltip Text="Export PDF (Disabled)">
+                <MudIconButton Icon="@Icons.Custom.FileFormats.FilePdf" Color="Color.Default" Disabled="true" />
+            </MudTooltip>
+        </ToolBarContent>
 
         <HeaderContent>
-            <MudTh Style="width:15%;">Datetime</MudTh>
-            <MudTh Style="width:25%;">Event Type</MudTh>
-            <MudTh Style="width:20%;">Reader</MudTh>
-            <MudTh Style="width:15%;">Cardholder Name</MudTh>
-            <MudTh Style="width:15%;">Jabatan/Agensi</MudTh>
-            <MudTh Style="width:10%;">Card.No</MudTh>
+            <MudTh>Datetime</MudTh>
+            <MudTh>Event Type</MudTh> <MudTh>Reader</MudTh>
+            <MudTh>Cardholder Name</MudTh> <MudTh>Jabatan/Agensi</MudTh> <MudTh>Card.No</MudTh>
         </HeaderContent>
 
         <RowTemplate>
-            <MudTd DataLabel="Datetime">@context.Datetime.ToString("yyyy-MM-dd HH:mm:ss")</MudTd>
-            <MudTd DataLabel="Event Type">@context.EventType</MudTd>
-            <MudTd DataLabel="Reader">@context.Reader</MudTd>
-            <MudTd DataLabel="Cardholder Name">@context.CardholderName</MudTd>
-            <MudTd DataLabel="Jabatan/Agensi">@context.Agency</MudTd>
-            <MudTd DataLabel="Card.No">@context.CardNo</MudTd>
+            <MudTd DataLabel="Datetime">
+                <div class="d-flex flex-column">
+                    <MudText Typo="Typo.body2" Style="font-weight:bold;">
+                        @TimeZoneInfo.ConvertTimeFromUtc(context.UtcTime, TimeZoneInfo.FindSystemTimeZoneById("Singapore Standard Time")).ToString("dd MMM yyyy")
+                    </MudText>
+                    <MudText Typo="Typo.caption">
+                        @TimeZoneInfo.ConvertTimeFromUtc(context.UtcTime, TimeZoneInfo.FindSystemTimeZoneById("Singapore Standard Time")).ToString("HH:mm:ss")
+                    </MudText>
+                </div>
+            </MudTd>
+
+            <MudTd DataLabel="Event Type">
+                @{
+                    var evtName = context.EventName?.Split('.')?.Last() ?? "Unknown";
+                    var isGranted = evtName.Contains("Granted", StringComparison.OrdinalIgnoreCase);
+                }
+                <MudChip T="string" Color="@(isGranted? Color.Success: Color.Info)" Size="Size.Small" Variant="Variant.Outlined" Icon="@(isGranted? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Info)">
+                    @evtName
+                </MudChip>
+            </MudTd>
+
+            <MudTd DataLabel="Reader">@context.ReaderName</MudTd>
+
+            <MudTd DataLabel="Cardholder Name">
+                <div class="d-flex align-center">
+                    <MudAvatar Color="Color.Primary" Size="Size.Small" Class="mr-2">@(string.IsNullOrEmpty(context.UserName) ? "?" : context.UserName.Substring(0, 1))</MudAvatar>
+                    <MudText Typo="Typo.body2" Style="font-weight:600;">@context.UserName</MudText>
+                </div>
+            </MudTd>
+
+            <MudTd DataLabel="Jabatan/Agensi">@context.Organization</MudTd>
+
+            <MudTd DataLabel="Card.No">@context.CredentialNumber</MudTd>
         </RowTemplate>
 
         <NoRecordsContent>
-            <MudText>No event logs found.</MudText>
+            <MudText Align="Align.Center" Class="pa-4">No event logs found for the selected range.</MudText>
         </NoRecordsContent>
     </MudTable>
 
 </MudContainer>
 
 @code {
-    // --- Data Model ---
-    public class EventLog
+    // --- State Variables ---
+    private bool _loading = false;
+    private bool _isOrgSelectable = true;
+    private DateTime? _selectedDate = DateTime.Today;
+    private string? _selectedOrganization { get; set; }
+    private TimeSpan? _selectedStartTime = new TimeSpan(0, 0, 0);
+    private TimeSpan? _selectedEndTime = new TimeSpan(23, 59, 59);
+
+    private int _currentPage = 0;
+    private int _rowPerPage = 10;
+    private string? _SearchCardholder { get; set; }
+
+    private DateTime? GetStartDatetime => _selectedDate.HasValue && _selectedStartTime.HasValue ? _selectedDate.Value.Date + _selectedStartTime.Value : null;
+    private DateTime? GetEndDatetime => _selectedDate.HasValue && _selectedEndTime.HasValue ? _selectedDate.Value.Date + _selectedEndTime.Value : null;
+
+    // --- Data Models ---
+    private List<Organization>? organizations { get; set; }
+    private List<ActivityEvent>? EventLogs { get; set; }
+
+    // --- Lifecycle ---
+    protected override async Task OnInitializedAsync()
     {
-        public DateTime Datetime { get; set; }
-        public string EventType { get; set; } = string.Empty;
-        public string Reader { get; set; } = string.Empty;
-        public string CardholderName { get; set; } = string.Empty;
-        public string Agency { get; set; } = string.Empty;
-        public string CardNo { get; set; } = string.Empty;
+        await LoadOrganizationsAsync();
+        await SetUserOrganizationAsync();
+        await OnSearchAsync();
     }
 
-    // --- Component State and Properties ---
-    private string startDate;
-    private string endDate;
-    private string selectedAgency;
-
-    private List<EventLog> EventLogs = new List<EventLog>();
-
-    // --- Methods ---
-
-    protected override void OnInitialized()
+    private async Task LoadOrganizationsAsync()
     {
-        EventLogs = GetSampleData();
+        var response = await DatasourceService.ListOrganizationAsync();
+        if (response.Error == 0) organizations = response.Data;
+        else organizations = new List<Organization>();
     }
 
-    private List<EventLog> GetSampleData()
+    private async Task SetUserOrganizationAsync()
     {
-        return new List<EventLog>
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        var isAdmin = user.IsInRole("Admin");
+
+        if (!isAdmin)
         {
-            new EventLog {
-                Datetime = DateTime.ParseExact("2025-11-04 23:39:48", "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
-                EventType = "SPG.S1000.Event.AccessGrantedEvent",
-                Reader = "C2-B1-2-R1-TO LOADING BAY-IN",
-                CardholderName = "ADILIA NATHRAH",
-                Agency = "Jabatan Perkhidmatan Awam",
-                CardNo = "78023418"
-            },
-            new EventLog {
-                Datetime = DateTime.ParseExact("2025-11-04 23:39:41", "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
-                EventType = "SPG.S1000.Event.AccessTakenEvent",
-                Reader = "C2-B1-2-R1-TO LOADING BAY-IN",
-                CardholderName = "ADILIA NATHRAH",
-                Agency = "Jabatan Perkhidmatan Awam",
-                CardNo = "78023418"
-            },
-            new EventLog {
-                Datetime = DateTime.ParseExact("2025-11-04 23:32:50", "yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
-                EventType = "SPG.S1000.Event.AccessGrantedEvent",
-                Reader = "C1-L1-3-R1-FIRE EXIT DOOR 2-RIGHT-IN",
-                CardholderName = "MOHAMAD HELMY",
-                Agency = "Jabatan Perkhidmatan Awam",
-                CardNo = "03460430"
+            _isOrgSelectable = false;
+            var userId = UserManager.GetUserId(user);
+            var orgRole = Db.OrganizationRoles.FirstOrDefault(c => c.UserId == userId);
+
+            if (orgRole != null && organizations?.Any() == true)
+                _selectedOrganization = organizations.FirstOrDefault(x => x.Id == orgRole.OrganizationId)?.Name;
+
+            if (string.IsNullOrEmpty(_selectedOrganization) && organizations?.Any() == true)
+                _selectedOrganization = organizations.First().Name;
+        }
+    }
+
+    // --- Search Logic ---
+    private async Task OnSearchAsync()
+    {
+        if (GetStartDatetime == null || GetEndDatetime == null) return;
+
+        _loading = true;
+
+        var utcStart = GetStartDatetime.Value.ToUniversalTime();
+        var utcEnd = GetEndDatetime.Value.ToUniversalTime();
+
+        var response = await DatasourceService.ListActivityEventAsync(utcStart, utcEnd, _selectedOrganization);
+
+        if (response.Error == 0)
+        {
+            var data = response.Data;
+
+            if (!string.IsNullOrWhiteSpace(_SearchCardholder))
+            {
+                var keyword = _SearchCardholder.Trim();
+                data = data?.Where(c =>
+                    (!string.IsNullOrEmpty(c.UserName) && c.UserName.Contains(keyword, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(c.CredentialNumber) && c.CredentialNumber.Contains(keyword, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(c.ReaderName) && c.ReaderName.Contains(keyword, StringComparison.OrdinalIgnoreCase)) ||
+                    (!string.IsNullOrEmpty(c.MykadNumber) && c.MykadNumber.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+                ).ToList();
             }
-        };
+            EventLogs = data;
+        }
+        else
+        {
+            EventLogs = new List<ActivityEvent>();
+        }
+
+        _loading = false;
+        StateHasChanged();
     }
 
-    private void SearchData()
+    // --- EXCEL EXPORT (Updated with Missing Fields) ---
+    private async Task ExportExcel()
     {
-        // Implementation for searching/filtering data
-    }
+        if (EventLogs == null || !EventLogs.Any())
+            return;
 
-    private void ExportToExcel()
-    {
-        // Implementation for exporting to Excel
-    }
+        // NOTE: Your ExcelExportService.ExportTransactionEvents method
+        // will likely need to map these fields internally if it wasn't already.
+        // The service receives the entire list of ActivityEvent objects.
+        var bytes = ExcelExportService.ExportTransactionEvents(EventLogs);
 
-    private void ExportToPdf()
-    {
-        // Implementation for exporting to PDF
+        var fileName = $"EventLogs_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+
+        await JS.InvokeVoidAsync(
+            "downloadFile",
+            fileName,
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            Convert.ToBase64String(bytes)
+        );
     }
 }

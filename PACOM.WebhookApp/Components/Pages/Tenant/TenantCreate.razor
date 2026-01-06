@@ -1,5 +1,4 @@
 ﻿@page "/Tenant/TenantCreate"
-
 @attribute [Authorize]
 
 @using Microsoft.AspNetCore.Authorization
@@ -10,40 +9,154 @@
 @inject ISnackbar Snackbar
 @rendermode InteractiveServer
 
-<MudPaper Class="pa-6 mx-auto" Style="max-width:600px;">
-    <MudText Typo="Typo.h5" Class="mb-4">Create Organization</MudText>
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4">
+    <MudText Typo="Typo.h5" Class="mb-4">New Tenant Registration</MudText>
 
-    <MudTextField @bind-Value="organization.Name" Label="Organization Name" Variant="Variant.Outlined" Class="mb-3" Required="true" />
-    <MudTextField @bind-Value="organization.Code" Label="Organization Code" Variant="Variant.Outlined" Class="mb-3" Required="true" />
-    <MudTextField @bind-Value="organization.Description" Label="Description" Variant="Variant.Outlined" Class="mb-3" />
-    <MudTextField @bind-Value="organization.Token" Label="Token" Variant="Variant.Outlined" Class="mb-3" />
-    <MudTextField @bind-Value="organization.url" Label="Webhook Link" Variant="Variant.Outlined" Class="mb-3" />
+    <MudCard Elevation="3">
+        <MudForm @ref="form" @bind-IsValid="@success">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Organization Details</MudText>
+                    <MudText Typo="Typo.caption">Create a new tenant space for webhook integration.</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
 
-    <MudSwitch T="bool" @bind-Checked="organization.IsActive" Label="Active" Color="Color.Primary" Class="mb-4" />
+            <MudDivider />
 
-    <MudButton Color="Color.Primary" Variant="Variant.Filled" OnClick="SaveOrganization" Class="me-2">
-        Save
-    </MudButton>
-    <MudButton Color="Color.Secondary" Variant="Variant.Outlined" OnClick="@(() => NavManager.NavigateTo("/Tenant/Tenants"))">
-        Back
-    </MudButton>
-</MudPaper>
+            <MudCardContent>
+                <MudGrid>
+                    @* Section 1: Basic Identity *@
+                    <MudItem xs="12">
+                        <MudText Color="Color.Primary" Typo="Typo.subtitle2" Class="mb-2">Identity</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="8">
+                        <MudTextField @bind-Value="organization.Name"
+                                      Label="Organization Name"
+                                      Variant="Variant.Outlined"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Business"
+                                      Required="true"
+                                      RequiredError="Organization Name is required" />
+                    </MudItem>
+
+                    <MudItem xs="12" sm="4">
+                        <MudTextField @bind-Value="organization.Code"
+                                      Label="Code (e.g. ORG-01)"
+                                      Variant="Variant.Outlined"
+                                      Required="true"
+                                      RequiredError="Code is required"
+                                      HelperText="Unique identifier" />
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="organization.Description"
+                                      Label="Description"
+                                      Variant="Variant.Outlined"
+                                      Lines="2" />
+                    </MudItem>
+
+                    @* Section 2: Technical Configuration *@
+                    <MudItem xs="12" Class="mt-4">
+                        <MudText Color="Color.Primary" Typo="Typo.subtitle2" Class="mb-2">Integration Configuration</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="organization.Token"
+                                      Label="Security Token"
+                                      Variant="Variant.Outlined"
+                                      Adornment="Adornment.End"
+                                      AdornmentIcon="@Icons.Material.Filled.Refresh"
+                                      OnAdornmentClick="GenerateToken"
+                                      AdornmentAriaLabel="Generate Random Token"
+                                      HelperText="Click the icon to generate a secure random token"
+                                      Required="true"
+                                      RequiredError="A token is required" />
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="organization.url"
+                                      Label="Webhook Endpoint URL"
+                                      Variant="Variant.Outlined"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Link"
+                                      InputType="InputType.Url"
+                                      Placeholder="https://api.example.com/hooks" />
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudSwitch T="bool" @bind-Value="organization.IsActive"
+                                   Color="Color.Success"
+                                   Label="@(organization.IsActive ? "Status: Active" : "Status: Inactive")" />
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+
+            <MudDivider />
+
+            <MudCardActions Class="d-flex justify-end pa-4 gap-2">
+                <MudButton Variant="Variant.Text"
+                           OnClick="@(() => NavManager.NavigateTo("/Tenant/Tenants"))">
+                    Cancel
+                </MudButton>
+
+                <MudButton Color="Color.Primary"
+                           Variant="Variant.Filled"
+                           StartIcon="@Icons.Material.Filled.Save"
+                           OnClick="SaveOrganization"
+                           Disabled="@(isSaving)">
+                    @(isSaving ? "Creating..." : "Create Organization")
+                </MudButton>
+            </MudCardActions>
+        </MudForm>
+    </MudCard>
+</MudContainer>
 
 @code {
+    MudForm form;
+    bool success;
+    bool isSaving = false;
+
     private Organization organization = new()
     {
-        CreatedAt = DateTime.UtcNow,
-        UpdatedAt = DateTime.UtcNow
+        IsActive = true // Default to active
     };
+
+    // Helper to auto-generate a GUID token
+    private void GenerateToken()
+    {
+        organization.Token = Guid.NewGuid().ToString().Replace("-", "").ToUpper();
+        Snackbar.Add("New security token generated", Severity.Info);
+    }
 
     private async Task SaveOrganization()
     {
-        organization.CreatedAt = DateTime.UtcNow;
-        organization.UpdatedAt = DateTime.UtcNow;
+        // 1. Validate Form
+        await form.Validate();
+        if (!form.IsValid) return;
 
-        Db.Organizations.Add(organization);
-        await Db.SaveChangesAsync();
-        Snackbar.Add("Organization Add successfully.", Severity.Success);
-        NavManager.NavigateTo("/Tenant/Tenants");
+        isSaving = true;
+
+        try
+        {
+            // 2. Set Timestamps
+            organization.CreatedAt = DateTime.UtcNow;
+            organization.UpdatedAt = DateTime.UtcNow;
+
+            // 3. Save to DB
+            Db.Organizations.Add(organization);
+            await Db.SaveChangesAsync();
+
+            Snackbar.Add($"Organization '{organization.Name}' created successfully.", Severity.Success);
+            NavManager.NavigateTo("/Tenant/Tenants");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Error creating organization: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isSaving = false;
+        }
     }
 }

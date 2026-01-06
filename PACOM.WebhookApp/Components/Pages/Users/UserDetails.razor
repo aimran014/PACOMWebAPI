@@ -1,6 +1,4 @@
 ﻿@page "/Users/UserDetails/{UserId}"
-@* @attribute [Authorize(Roles = "Admin")] *@
-
 @attribute [Authorize]
 
 @using Microsoft.AspNetCore.Authorization
@@ -9,88 +7,149 @@
 
 @inject UserManager<ApplicationUser> UserManager
 @inject NavigationManager NavManager
+@inject ISnackbar Snackbar
 @rendermode InteractiveServer
 
-
-<MudPaper Class="pa-4" Elevation="2">
-
-    <MudText Typo="Typo.h4" GutterBottom="true">User Details</MudText>
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4">
+    <MudText Typo="Typo.h5" GutterBottom="true" Class="mb-4">User Management</MudText>
 
     @if (user == null)
     {
-        <MudText>Loading...</MudText>
+        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="200px" />
     }
     else
     {
-        <MudGrid>
-            <MudItem xs="12" sm="3">
-                <MudText Color="Color.Primary" Typo="Typo.subtitle1">Email</MudText>
-            </MudItem>
-            <MudItem xs="12" sm="9">
-                <MudText>@user.Email</MudText>
-            </MudItem>
+        @* HEADER CARD: Avatar and Quick Actions *@
+        <MudCard Elevation="3" Class="mb-4">
+            <MudCardContent>
+                <div class="d-flex align-center gap-4">
+                    <MudAvatar Color="@(isDisabled? Color.Error: Color.Primary)" Size="Size.Large" Class="ma-2">
+                        @user.UserName?.ToUpper().FirstOrDefault()
+                    </MudAvatar>
 
-            <MudItem xs="12" sm="3" Class="mt-2">
-                <MudText Color="Color.Primary" Typo="Typo.subtitle1">Username</MudText>
-            </MudItem>
-            <MudItem xs="12" sm="9" Class="mt-2">
-                <MudText>@user.UserName</MudText>
-            </MudItem>
+                    <div>
+                        <MudText Typo="Typo.h6">@user.UserName</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@user.Id</MudText>
+                        <div class="mt-1">
+                            @if (isDisabled)
+                            {
+                                <MudChip T="string" Color="Color.Error" Size="Size.Small" Icon="@Icons.Material.Filled.Lock">Account Locked</MudChip>
+                            }
+                            else
+                            {
+                                <MudChip T="string" Color="Color.Success" Size="Size.Small" Icon="@Icons.Material.Filled.CheckCircle">Active</MudChip>
+                            }
+                        </div>
+                    </div>
 
-            <MudItem xs="12" sm="3" Class="mt-2">
-                <MudText Color="Color.Primary" Typo="Typo.subtitle1">Account Status</MudText>
-            </MudItem>
-            <MudItem xs="12" sm="9" Class="mt-2">
-                <MudText>@status</MudText>
-            </MudItem>
+                    <MudSpacer />
 
-            <MudItem xs="12" sm="3" Class="mt-2">
-                <MudText Color="Color.Primary" Typo="Typo.subtitle1">Email Confirmed</MudText>
-            </MudItem>
-            <MudItem xs="12" sm="9" Class="mt-2">
-                <MudText>@user.EmailConfirmed</MudText>
-            </MudItem>
-        </MudGrid>
+                    <MudTooltip Text="@(isDisabled ? "Unlock this account" : "Lock this account access")">
+                        <MudIconButton OnClick="ToggleLockout"
+                                       Icon="@(isDisabled ? Icons.Material.Filled.LockOpen : Icons.Material.Filled.Lock)"
+                                       Color="@(isDisabled ? Color.Success : Color.Error)"
+                                       Variant="Variant.Filled" />
+                    </MudTooltip>
+                </div>
+            </MudCardContent>
+        </MudCard>
 
-        <MudDivider Class="my-4" />
+        @* DETAILS CARD *@
+        <MudCard Elevation="3">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Account Details</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="12" sm="6">
+                        <MudField Label="Email Address" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Email">
+                            @user.Email
+                        </MudField>
+                    </MudItem>
 
-        <MudButton Color="Color.Error"
-                   Variant="Variant.Filled"
-                   OnClick="ToggleLockout">
-            @(isDisabled ? "Enable Account" : "Disable Account")
-        </MudButton>
+                    <MudItem xs="12" sm="6">
+                        <MudField Label="Email Status" Adornment="Adornment.Start" AdornmentIcon="@(user.EmailConfirmed? Icons.Material.Filled.MarkEmailRead : Icons.Material.Filled.MarkEmailUnread)">
+                            @(user.EmailConfirmed ? "Confirmed" : "Unverified")
+                        </MudField>
+                    </MudItem>
 
-        <MudButton Color="Color.Default"
-                   Variant="Variant.Filled"
-                   Class="ml-3"
-                   Href="/Users/Users">
-            Back
-        </MudButton>
+                    <MudItem xs="12" sm="6">
+                        <MudField Label="Phone Number" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Phone">
+                            @(string.IsNullOrEmpty(user.PhoneNumber) ? "N/A" : user.PhoneNumber)
+                        </MudField>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6">
+                        <MudField Label="Lockout End Date" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Timer">
+                            @(user.LockoutEnd.HasValue? user.LockoutEnd.Value.ToLocalTime().ToString("g") : "Not Set")
+                        </MudField>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+
+            <MudCardActions Class="d-flex justify-end pa-4">
+                <MudButton StartIcon="@Icons.Material.Filled.ArrowBack"
+                           Variant="Variant.Text"
+                           Href="/Users/Users">
+                    Back to List
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
     }
-</MudPaper>
-
+</MudContainer>
 
 @code {
     [Parameter] public string? UserId { get; set; }
     ApplicationUser? user;
     bool isDisabled;
-    string status = "";
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadUserAsync();
+    }
+
+    private async Task LoadUserAsync()
+    {
+        if (string.IsNullOrEmpty(UserId)) return;
+
         user = await UserManager.FindByIdAsync(UserId);
-        isDisabled = user?.LockoutEnd.HasValue == true && user.LockoutEnd > DateTimeOffset.UtcNow;
-        status = isDisabled ? "Disabled" : "Active";
+
+        if (user != null)
+        {
+            // Logic: Is locked out if EndDate exists AND is in the future
+            isDisabled = user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow;
+        }
     }
 
     async Task ToggleLockout()
     {
+        if (user == null) return;
+
+        IdentityResult result;
+
         if (!isDisabled)
-            await UserManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddYears(100));
+        {
+            // Lock them out for 100 years
+            result = await UserManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddYears(100));
+            if (result.Succeeded) Snackbar.Add("Account disabled successfully", Severity.Warning);
+        }
         else
-            await UserManager.SetLockoutEndDateAsync(user, null);
+        {
+            // Unlock them immediately
+            result = await UserManager.SetLockoutEndDateAsync(user, null);
+            if (result.Succeeded) Snackbar.Add("Account enabled successfully", Severity.Success);
+        }
 
-        NavManager.NavigateTo(NavManager.Uri, true);
+        if (result.Succeeded)
+        {
+            // REFRESH STATE LOCALLY (Faster than page reload)
+            await LoadUserAsync();
+        }
+        else
+        {
+            Snackbar.Add("Error updating user status", Severity.Error);
+        }
     }
-
 }

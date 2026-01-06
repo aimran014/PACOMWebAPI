@@ -1,7 +1,5 @@
 ﻿@page "/Users/Users"
-
-@* <!-- You can restrict roles later --> *@
-@attribute [Authorize(Roles = "Admin")]  
+@attribute [Authorize(Roles = "Admin")]
 
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Authorization
@@ -12,121 +10,169 @@
 @rendermode InteractiveServer
 
 @inject NavigationManager NavManager
-@inject DatasourcesService ds
 @inject UserManager<ApplicationUser> UserManager
+@inject ISnackbar Snackbar
 
+<PageTitle>User Management</PageTitle>
 
-<PageTitle>Manage Users</PageTitle>
-
-<MudText Typo="Typo.h4" Class="mb-4">Registered Users</MudText>
-
-<MudGrid>
-
-    <MudItem xs="12" sm="2">
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" @onclick='() => NavManager.NavigateTo("/Account/Register")'>
-            New User
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+    <div class="d-flex justify-space-between align-center mb-4">
+        <div>
+            <MudText Typo="Typo.h5">User Management</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Manage system access and account status</MudText>
+        </div>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.PersonAdd"
+                   OnClick='() => NavManager.NavigateTo("Account/RegisterAfterLogin")'>
+            Create New User
         </MudButton>
-    </MudItem>
+    </div>
 
+    <MudTable Items="@users"
+              Dense="true"
+              Hover="true"
+              Bordered="false"
+              Striped="true"
+              Filter="new Func<ApplicationUser, bool>(FilterFunc)"
+              Elevation="3"
+              Loading="@(users == null)">
 
-    <MudItem xs="12">
+        <ToolBarContent>
+            <MudText Typo="Typo.h6">System Users</MudText>
+            <MudSpacer />
+            <MudTextField @bind-Value="searchString"
+                          Placeholder="Search users..."
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search"
+                          IconSize="Size.Medium"
+                          Class="mt-0" />
+        </ToolBarContent>
 
-        @if (users == null)
-        {
-            <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
-        }
-        else if (!users.Any())
-        {
-            <MudText>No registered users found.</MudText>
-        }
-        else
-        {
-            <MudTable Items="users" Hover="true" Dense="true" Bordered="true" Striped="true">
-                <HeaderContent>
-                    <MudTh>Email</MudTh>
-                    <MudTh>Username</MudTh>
-                    <MudTh>Email Confirmed</MudTh>
-                    <MudTh>Account Actived</MudTh>
-                    <MudTh>Action</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd>@context.Email</MudTd>
-                    <MudTd>@context.UserName</MudTd>
-                    <MudTd>
-                        @if (context.EmailConfirmed)
-                        {
-                            <MudIcon Color="Color.Success" Icon="@Icons.Material.Filled.Check" />
-                        }
-                        else
-                        {
-                            <MudIcon Color="Color.Error" Icon="@Icons.Material.Filled.Close" />
-                        }
-                    </MudTd>
-                    <MudTd>
-                        @(IsLocked(context) ? "Disabled" : "Active")
-                    </MudTd>
-                    <MudTd>
-                        <MudButton Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small" Class="me-1" OnClick="@(() => ViewUser(context.Id))">
-                            Details
-                        </MudButton>
+        <HeaderContent>
+            <MudTh>User Identity</MudTh>
+            <MudTh>Email Status</MudTh>
+            <MudTh>Account Status</MudTh>
+            <MudTh Style="text-align:right">Actions</MudTh>
+        </HeaderContent>
 
-                        <MudButton Color="Color.Secondary" Variant="Variant.Filled" Size="Size.Small" Class="me-1" OnClick="@(() => EditRoles(context.Id))">
-                            Roles
-                        </MudButton>
+        <RowTemplate>
+            @* ... (Your Row content stays the same) ... *@
+            <MudTd DataLabel="User">
+                <div class="d-flex align-center">
+                    <MudAvatar Color="@(IsLocked(context) ? Color.Error : Color.Primary)" Size="Size.Small" Class="mr-3">
+                        @context.UserName?.FirstOrDefault().ToString().ToUpper()
+                    </MudAvatar>
+                    <div>
+                        <MudText Typo="Typo.body2" Style="font-weight: 500;">@context.UserName</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">@context.Email</MudText>
+                    </div>
+                </div>
+            </MudTd>
 
-                        <MudButton Color="@(IsLocked(context) ? Color.Success : Color.Warning)"
-                                   Variant="Variant.Filled"
+            <MudTd DataLabel="Email Confirmed">
+                @if (context.EmailConfirmed)
+                {
+                    <MudChip T="string" Color="Color.Success" Size="Size.Small" Variant="Variant.Text" Icon="@Icons.Material.Filled.CheckCircle">Verified</MudChip>
+                }
+                else
+                {
+                    <MudChip T="string" Color="Color.Warning" Size="Size.Small" Variant="Variant.Text" Icon="@Icons.Material.Filled.MarkEmailUnread">Pending</MudChip>
+                }
+            </MudTd>
+
+            <MudTd DataLabel="Status">
+                @if (IsLocked(context))
+                {
+                    <MudChip T="string" Color="Color.Error" Size="Size.Small" Icon="@Icons.Material.Filled.Lock">Disabled</MudChip>
+                }
+                else
+                {
+                    <MudChip T="string" Color="Color.Success" Size="Size.Small" Icon="@Icons.Material.Filled.Check">Active</MudChip>
+                }
+            </MudTd>
+
+            <MudTd DataLabel="Actions" Style="text-align:right">
+                <MudTooltip Text="View Details">
+                    <MudIconButton Icon="@Icons.Material.Filled.Visibility"
+                                   Color="Color.Default"
                                    Size="Size.Small"
-                                   OnClick="@(() => ToggleLockout(context))">
-                            @(IsLocked(context) ? "Enable" : "Disable")
-                        </MudButton>
+                                   OnClick="@(() => ViewUser(context.Id))" />
+                </MudTooltip>
 
-                    </MudTd>
-                </RowTemplate>
-            </MudTable>
-        }
+                <MudTooltip Text="Manage Permissions">
+                    <MudIconButton Icon="@Icons.Material.Filled.AdminPanelSettings"
+                                   Color="Color.Secondary"
+                                   Size="Size.Small"
+                                   OnClick="@(() => EditRoles(context.Id))" />
+                </MudTooltip>
 
-    </MudItem>
-
-
-</MudGrid>
+                <MudTooltip Text="@(IsLocked(context) ? "Unlock Account" : "Disable Account")">
+                    <MudIconButton Icon="@(IsLocked(context) ? Icons.Material.Filled.LockOpen : Icons.Material.Filled.Lock)"
+                                   Color="@(IsLocked(context) ? Color.Success : Color.Error)"
+                                   Size="Size.Small"
+                                   OnClick="@(() => ToggleLockout(context))" />
+                </MudTooltip>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudContainer>
 
 @code {
     private IList<ApplicationUser>? users;
+    private string searchString = "";
 
     protected override async Task OnInitializedAsync()
     {
-        users = await UserManager.Users.ToListAsync();
-         LoadTenants();
+        await LoadUsers();
     }
 
+    private async Task LoadUsers()
+    {
+        users = await UserManager.Users.ToListAsync();
+    }
+
+    // Helper to check lock status
     bool IsLocked(ApplicationUser user)
     {
-        // LockoutEnd > now means account is disabled
         return user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow;
+    }
+
+    // Filter Logic for Search Bar
+    private bool FilterFunc(ApplicationUser element)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+        if (element.UserName?.Contains(searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+        if (element.Email?.Contains(searchString, StringComparison.OrdinalIgnoreCase) == true)
+            return true;
+        return false;
     }
 
     async Task ToggleLockout(ApplicationUser user)
     {
+        string message = "";
+        Severity severity;
+
         if (IsLocked(user))
         {
-            // Enable account
+            // Enable
             await UserManager.SetLockoutEndDateAsync(user, null);
+            message = $"Account for {user.UserName} unlocked.";
+            severity = Severity.Success;
         }
         else
         {
-            // Disable account (lockout far in the future)
+            // Disable
             await UserManager.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.AddYears(100));
+            message = $"Account for {user.UserName} disabled.";
+            severity = Severity.Warning;
         }
 
-        // Refresh users list so the MudTable updates
-        users = await UserManager.Users.ToListAsync();
-        StateHasChanged();
-    }
-
-    private void LoadTenants()
-    {
-        List<string>? TenantName = DatasourcesService.ListPacomOrganization().Data;
+        // Show feedback and refresh list
+        Snackbar.Add(message, severity);
+        await LoadUsers();
     }
 
     void ViewUser(string id) => NavManager.NavigateTo($"/Users/UserDetails/{id}");

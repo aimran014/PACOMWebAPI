@@ -1,0 +1,14 @@
+﻿@inherits LayoutComponentBase
+
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    @* REMOVED: background-color: #f0f2f5 *@
+    @* ADDED: pa-0 (padding: 0) to ensure edges touch the screen *@
+    <MudMainContent Class="pa-0" Style="height: 100vh; width: 100vw; overflow: hidden; background-color: white;">
+        @Body
+    </MudMainContent>
+</MudLayout>

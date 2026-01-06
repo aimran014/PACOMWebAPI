@@ -17,6 +17,53 @@
     <!-- AppBar -->
     <MudAppBar Elevation="4" Color="Color.Primary">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(() => DrawerToggle())" />
+        <MudSpacer />
+        <AuthorizeView>
+            <Authorized>
+                <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" LockScroll="true">
+                    <ActivatorContent>
+                        <MudIconButton Icon="@Icons.Material.Filled.AccountCircle" Color="Color.Inherit" />
+                    </ActivatorContent>
+                    <ChildContent>
+                        @* --- SECTION 1: User Profile Header --- *@
+                        <a href="Account/Manage"
+                           class="d-flex flex-column align-center justify-center pa-4 hover:mud-default-hover"
+                           style="text-decoration: none; color: inherit; min-width: 200px;">
+
+                            <MudAvatar Color="Color.Secondary" Class="mb-2">
+                                @(context.User.Identity?.Name?.FirstOrDefault().ToString().ToUpper() ?? "U")
+                            </MudAvatar>
+
+                            <MudText Typo="Typo.body1" Align="Align.Center">
+                                @context.User.Identity?.Name
+                            </MudText>
+
+                            <MudText Typo="Typo.caption" Color="Color.Default">
+                                Signed in
+                            </MudText>
+                        </a>
+
+                        <MudDivider Class="mb-2" />
+
+                        @* --- SECTION 2: Actions --- *@
+                        <MudMenuItem Class="pa-0">
+                            @* We put the styling on the form and button to fill the menu item completely. 
+                               The 'pa-0' on MenuItem removes default padding so the button hit-box fills the space.
+                            *@
+                            <form action="Account/Logout" method="post" class="w-100">
+                                <AntiforgeryToken />
+                                <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                                <button type="submit" class="d-flex align-center gap-2 py-2 px-4 w-100 hover:mud-default-hover"
+                                        style="background:transparent; border:none; cursor:pointer;">
+                                    <MudIcon Icon="@Icons.Material.Filled.Logout" Color="Color.Error" Size="Size.Small" />
+                                    <MudText Typo="Typo.body2">Logout</MudText>
+                                </button>
+                            </form>
+                        </MudMenuItem>
+                    </ChildContent>
+                </MudMenu>
+            </Authorized>
+        </AuthorizeView>
     </MudAppBar>
 
     <MudDrawer @bind-Open="@_drawerOpen">
@@ -25,7 +72,7 @@
             <MudText Typo="Typo.h5" Class="mt-1">Webhook Manager</MudText>
         </MudDrawerHeader>
 
-        <LocalNavMenu/>
+        <LocalNavMenu />
 
     </MudDrawer>
 
@@ -39,8 +86,27 @@
 
 @code {
     bool _drawerOpen = true;
+    private string? currentUrl;
+
+    protected override void OnInitialized()
+    {
+        currentUrl = Navigation.ToBaseRelativePath(Navigation.Uri);
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = Navigation.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
     void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
     }
 }

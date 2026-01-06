@@ -27,7 +27,6 @@ builder.Services.AddRazorComponents()
 // Add MudBlazor services
 builder.Services.AddMudServices();
 
-
 // ✅ Add this line:
 builder.Services.AddHttpClient();
 

@@ -100,13 +100,6 @@
             <MudTd DataLabel="Card.No">@context.CredentialNumber</MudTd>
         </RowTemplate>
 
-        <PagerContent>
-            <MudTablePager />
-            <MudText Typo="Typo.caption" Class="ml-2">
-                Page @(_currentPage + 1) of @((Transaction?.Count / _rowPerPage) + ((Transaction?.Count % _rowPerPage) > 0 ? 1 : 0))
-            </MudText>
-        </PagerContent>
-
         <NoRecordsContent>
             <MudText>No event logs found.</MudText>
         </NoRecordsContent>

@@ -74,14 +74,6 @@
             <MudSpacer/>
             <MudDivider Class="my-2" />
 
-            <form action="Account/Logout" method="post">
-                <AntiforgeryToken />
-                <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                <button type="submit" class="nav-link">
-                    <MudIcon Icon="@Icons.Material.Filled.Logout" Class="me-2" />Logout
-                </button>
-            </form>
-
         </Authorized>
 
     </AuthorizeView>

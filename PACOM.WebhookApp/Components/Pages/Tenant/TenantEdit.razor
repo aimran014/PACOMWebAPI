@@ -1,5 +1,4 @@
 ﻿@page "/Tenant/TenantEdit/{Id:int?}"
-
 @attribute [Authorize]
 
 @using Microsoft.AspNetCore.Authorization
@@ -14,61 +13,186 @@
 @inject DatasourcesService OrgService
 @rendermode InteractiveServer
 
-<MudPaper Class="pa-4 mx-auto" Style="max-width:500px;">
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4">
+    <MudText Typo="Typo.h5" Class="mb-4">Edit Tenant</MudText>
 
-        <MudTextField Label="Name" @bind-Value="organization.Name" Disabled="true" />
-        <MudTextField Label="Code" @bind-Value="organization.Code" Disabled="true" />
+    @if (isLoading)
+    {
+         <MudCard Elevation="3">
+             <MudCardContent>
+                 <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="50px" Class="mb-3"/>
+                 <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="50px" Class="mb-3"/>
+                 <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="50px" />
+             </MudCardContent>
+         </MudCard>
+    }
+    else if (organization == null || organization.Id == 0)
+    {
+        <MudAlert Severity="Severity.Error">Tenant not found or invalid ID.</MudAlert>
+        <MudButton Variant="Variant.Filled" Class="mt-2" OnClick='() => Nav.NavigateTo("/Tenant/Tenants")'>Return to List</MudButton>
+    }
+    else
+    {
+        <MudCard Elevation="3">
+            <MudForm @ref="form" @bind-IsValid="@success">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6">@organization.Name</MudText>
+                        <MudText Typo="Typo.caption">Manage integration settings and status.</MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudChip T="string" Color="@(organization.IsActive ? Color.Success : Color.Error)" Size="Size.Small" Variant="Variant.Outlined">
+                            @(organization.IsActive ? "Active" : "Inactive")
+                        </MudChip>
+                    </CardHeaderActions>
+                </MudCardHeader>
 
-        <MudTextField Label="Webhook Link" @bind-Value="organization.url" Required="true" />
+                <MudDivider />
 
-    <MudSwitch T="bool" Label="Active" @bind-Value="organization.IsActive" Color="Color.Primary" />
-        <MudText>Active</MudText>
+                <MudCardContent>
+                    <MudGrid>
+                        @* Read-Only Identity Section *@
+                        <MudItem xs="12">
+                             <MudAlert Severity="Severity.Info" Dense="true" NoIcon="true" Class="mb-2">
+                                 Identity fields (Name/Code) cannot be changed after creation.
+                             </MudAlert>
+                        </MudItem>
 
-        <MudButton OnClick="Save" Variant="Variant.Filled" Color="Color.Primary">Save</MudButton>
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="organization.Name" 
+                                          Label="Organization Name" 
+                                          Variant="Variant.Filled" 
+                                          Disabled="true"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Lock" />
+                        </MudItem>
 
-        <MudButton Variant="Variant.Outlined" Color="Color.Secondary" @onclick='() => Nav.NavigateTo("/Tenant/Tenants")'>
-            Cancel
-        </MudButton>
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="organization.Code" 
+                                          Label="Tenant Code" 
+                                          Variant="Variant.Filled" 
+                                          Disabled="true"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Fingerprint" />
+                        </MudItem>
 
-</MudPaper>
+                        @* Editable Configuration Section *@
+                        <MudItem xs="12" Class="mt-2">
+                             <MudText Color="Color.Primary" Typo="Typo.subtitle2">Configuration</MudText>
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="organization.url" 
+                                          Label="Webhook Endpoint URL" 
+                                          Variant="Variant.Outlined" 
+                                          Required="true"
+                                          RequiredError="Webhook URL is required"
+                                          InputType="InputType.Url"
+                                          Adornment="Adornment.Start"
+                                          AdornmentIcon="@Icons.Material.Filled.Link"
+                                          Placeholder="https://api.yoursite.com/hook" />
+                        </MudItem>
+
+                        <MudItem xs="12">
+                             <MudPaper Class="pa-4 d-flex align-center justify-space-between" Outlined="true" Style="background-color: var(--mud-palette-background-grey);">
+                                 <div>
+                                     <MudText Typo="Typo.subtitle2">Tenant Status</MudText>
+                                     <MudText Typo="Typo.caption">Disable to pause all webhook events for this tenant.</MudText>
+                                 </div>
+                                 <MudSwitch T="bool" @bind-Value="organization.IsActive" 
+                                            Color="Color.Success" 
+                                            ThumbIcon="@(organization.IsActive ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)" />
+                             </MudPaper>
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+
+                <MudDivider />
+
+                <MudCardActions Class="d-flex justify-end pa-4 gap-2">
+                    <MudButton Variant="Variant.Text" 
+                               OnClick='() => Nav.NavigateTo("/Tenant/Tenants")'>
+                        Cancel
+                    </MudButton>
+
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               OnClick="Save"
+                               StartIcon="@Icons.Material.Filled.Save"
+                               Disabled="@(!success || isSaving)">
+                        @(isSaving ? "Saving..." : "Save Changes")
+                    </MudButton>
+                </MudCardActions>
+            </MudForm>
+        </MudCard>
+    }
+</MudContainer>
 
 @code {
     [Parameter] public int? Id { get; set; }
+    
+    MudForm form;
+    bool success;
+    bool isLoading = true;
+    bool isSaving = false;
     Organization organization = new();
 
     protected override async Task OnInitializedAsync()
     {
-        if (Id.HasValue)
-            organization = await Db.Organizations.FindAsync(Id.Value) ?? new();
+        try 
+        {
+            if (Id.HasValue)
+            {
+                organization = await Db.Organizations.FindAsync(Id.Value);
+            }
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     async Task Save()
     {
-        var response = await OrgService.ManageOrganizationAsync(organization);
+        await form.Validate();
+        if (!form.IsValid) return;
 
-        if(response.Error == 1)
+        isSaving = true;
+
+        try
         {
-            Snackbar.Add(response.Message, Severity.Error);
-            return;
+            var response = await OrgService.ManageOrganizationAsync(organization);
+
+            if(response.Error == 1)
+            {
+                Snackbar.Add(response.Message, Severity.Error);
+                return;
+            }
+
+            // Get logged-in user safely
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            var userName = user.Identity?.Name ?? "System";
+
+            // Audit log
+            await OrgService.AuditTrailAsync(new AuditTrails
+            {
+                Action = "UPDATE_TENANT",
+                UserName = userName,
+                Timestamp = DateTime.UtcNow,
+                Details = $"Updated tenant '{organization.Name}' (ID: {organization.Id}) - Active: {organization.IsActive}"
+            });
+
+            Snackbar.Add(response.Message, Severity.Success);
+            Nav.NavigateTo("/Tenant/Tenants");
         }
-
-        // Get logged-in user safely (Blazor way)
-        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-
-        var userName = user.Identity?.Name ?? "System";
-
-        // ✅ Correct audit log
-        await OrgService.AuditTrailAsync(new AuditTrails
+        catch (Exception ex)
         {
-            Action = "UPDATE_TENANT",
-            UserName = userName,
-            Timestamp = DateTime.UtcNow,
-            Details = $"Updated tenant '{organization.Name}' (ID: {organization.Id})"
-        });
-
-        Snackbar.Add(response.Message, Severity.Success);
-        Nav.NavigateTo("/Tenant/Tenants");
-
+            Snackbar.Add($"An error occurred: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isSaving = false;
+        }
     }
 }

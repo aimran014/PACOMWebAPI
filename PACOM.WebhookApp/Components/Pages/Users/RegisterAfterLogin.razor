@@ -1,0 +1,227 @@
+﻿@page "/Account/RegisterAfterLogin"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
+@rendermode InteractiveServer
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Identity
+@using PACOM.WebhookApp.Data
+@using MudBlazor
+
+@inject UserManager<ApplicationUser> UserManager
+@inject IUserStore<ApplicationUser> UserStore
+@inject RoleManager<IdentityRole> RoleManager
+@inject ILogger<RegisterAfterLogin> Logger
+@inject ISnackbar Snackbar
+@inject IJSRuntime JS
+
+<MudContainer MaxWidth="MaxWidth.Medium" Class="mt-4">
+    <div class="d-flex align-center mb-4">
+        <MudIconButton Icon="@Icons.Material.Filled.ArrowBack"
+                       Color="Color.Inherit"
+                       Edge="Edge.Start"
+                       OnClick="GoBack"
+                       Class="mr-2" />
+        <MudText Typo="Typo.h5">New User Registration</MudText>
+    </div>
+    
+    <MudCard Elevation="3">
+        <MudForm @ref="form" @bind-IsValid="@success">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">User Details</MudText>
+                    <MudText Typo="Typo.caption">Create a new user account for your organization.</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+
+            <MudDivider />
+
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="12">
+                        <MudText Color="Color.Primary" Typo="Typo.subtitle2" Class="mb-2">Account Credentials</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudTextField @bind-Value="Input.Email"
+                                      Label="Email Address"
+                                      Variant="Variant.Outlined"
+                                      InputType="InputType.Email"
+                                      Adornment="Adornment.Start"
+                                      AdornmentIcon="@Icons.Material.Filled.Email"
+                                      Required="true"
+                                      RequiredError="Email is required"
+                                      Immediate="true" />
+                    </MudItem>
+
+                    <MudItem xs="12" Class="mt-4">
+                        <MudText Color="Color.Primary" Typo="Typo.subtitle2" Class="mb-2">Security</MudText>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="Input.Password"
+                                      Label="Password"
+                                      Variant="Variant.Outlined"
+                                      InputType="@PasswordInput"
+                                      Adornment="Adornment.End"
+                                      AdornmentIcon="@PasswordInputIcon"
+                                      OnAdornmentClick="TogglePasswordVisibility"
+                                      Required="true"
+                                      RequiredError="Password is required" />
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="Input.ConfirmPassword"
+                                      Label="Confirm Password"
+                                      Variant="Variant.Outlined"
+                                      InputType="@PasswordInput"
+                                      Required="true"
+                                      RequiredError="Password confirmation is required"
+                                      Validation="@(new Func<string, string?>(PasswordMatchValidation))" />
+                    </MudItem>
+
+                </MudGrid>
+            </MudCardContent>
+
+            <MudDivider />
+
+            <MudCardActions Class="d-flex justify-end pa-4 gap-2">
+                <MudButton Variant="Variant.Text"
+                           OnClick="ResetForm">
+                    Reset
+                </MudButton>
+
+                <MudButton Color="Color.Primary"
+                           Variant="Variant.Filled"
+                           StartIcon="@Icons.Material.Filled.PersonAdd"
+                           OnClick="RegisterUserAsync"
+                           Disabled="@(isSaving)">
+                    @(isSaving ? "Creating..." : "Create User")
+                </MudButton>
+            </MudCardActions>
+        </MudForm>
+    </MudCard>
+</MudContainer>
+
+@code {
+    MudForm form;
+    bool success;
+    bool isSaving = false;
+
+    // Password Visibility Logic
+    bool isShow;
+    InputType PasswordInput = InputType.Password;
+    string PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+
+    private InputModel Input { get; set; } = new();
+    // --- Back Button Logic ---
+    private async Task GoBack()
+    {
+        await JS.InvokeVoidAsync("history.back");
+    }
+
+    void TogglePasswordVisibility()
+    {
+        if (isShow)
+        {
+            isShow = false;
+            PasswordInputIcon = Icons.Material.Filled.VisibilityOff;
+            PasswordInput = InputType.Password;
+        }
+        else
+        {
+            isShow = true;
+            PasswordInputIcon = Icons.Material.Filled.Visibility;
+            PasswordInput = InputType.Text;
+        }
+    }
+
+    // Custom Validation for Password Matching
+    private string? PasswordMatchValidation(string arg)
+    {
+        if (Input.Password != arg)
+            return "Passwords do not match";
+        return null;
+    }
+
+    private async Task ResetForm()
+    {
+        // 1. Clear the data model
+        Input = new InputModel();
+
+        // 2. Clear the form state (Modified/Touched)
+        await form.ResetAsync();
+
+        // 3. Clear any red validation error messages
+        form.ResetValidation();
+    }
+
+    public async Task RegisterUserAsync()
+    {
+        await form.Validate();
+        if (!form.IsValid) return;
+
+        isSaving = true;
+
+        try
+        {
+            var user = Activator.CreateInstance<ApplicationUser>();
+            await UserStore.SetUserNameAsync(user, Input.Email, CancellationToken.None);
+
+            if (UserManager.SupportsUserEmail)
+            {
+                await ((IUserEmailStore<ApplicationUser>)UserStore).SetEmailAsync(user, Input.Email, CancellationToken.None);
+            }
+
+            var result = await UserManager.CreateAsync(user, Input.Password);
+
+            if (!result.Succeeded)
+            {
+                var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+                Snackbar.Add($"Error: {errors}", Severity.Error);
+                isSaving = false;
+                return;
+            }
+
+            Logger.LogInformation("Admin created a new user account.");
+
+            // Assign Default Role
+            var allRoles = RoleManager.Roles.ToList();
+            var defaultRole = allRoles.FirstOrDefault()?.Name;
+
+            if (!string.IsNullOrWhiteSpace(defaultRole))
+            {
+                await UserManager.AddToRoleAsync(user, defaultRole);
+            }
+
+            // Auto-confirm email
+            var token = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+            await UserManager.ConfirmEmailAsync(user, token);
+
+            Snackbar.Add($"User {Input.Email} created successfully!", Severity.Success);
+            ResetForm(); // Ready for next user
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Unexpected error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = "";
+
+        [Required]
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters")]
+        public string Password { get; set; } = "";
+
+        [Required]
+        public string ConfirmPassword { get; set; } = "";
+    }
+}

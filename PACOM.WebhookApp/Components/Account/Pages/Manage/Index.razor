@@ -1,77 +1,272 @@
 ﻿@page "/Account/Manage"
+@layout PACOM.WebhookApp.Components.Layout.AccountLayout
 
 @using System.ComponentModel.DataAnnotations
+@using System.Text
+@using System.Text.Encodings.Web
 @using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
 @using PACOM.WebhookApp.Data
 
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IdentityUserAccessor UserAccessor
 @inject IdentityRedirectManager RedirectManager
+@inject IEmailSender<ApplicationUser> EmailSender
+@inject NavigationManager NavigationManager
 
-<PageTitle>Profile</PageTitle>
+<PageTitle>Account Settings</PageTitle>
 
-<h3>Profile</h3>
-<StatusMessage />
+@* ROOT CONTAINER: Fills the screen, splits Left/Right *@
+<div class="d-flex" style="height: 100vh; width: 100vw; overflow: hidden;">
 
-<div class="row">
-    <div class="col-xl-6">
-        <EditForm Model="Input" FormName="profile" OnValidSubmit="OnValidSubmitAsync" method="post">
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
-            <div class="form-floating mb-3">
-                <input type="text" value="@username" id="username" class="form-control" placeholder="Choose your username." disabled />
-                <label for="username" class="form-label">Username</label>
-            </div>
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.PhoneNumber" id="Input.PhoneNumber" class="form-control" placeholder="Enter your phone number" />
-                <label for="Input.PhoneNumber" class="form-label">Phone number</label>
-                <ValidationMessage For="() => Input.PhoneNumber" class="text-danger" />
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Save</button>
-        </EditForm>
+    @* --- LEFT SIDEBAR (Fixed Width, Full Height) --- *@
+    <div class="d-none d-md-flex flex-column border-end" style="width: 280px; background-color: #fbfbfb;">
+
+        @* HEADER IN SIDEBAR *@
+        <div class="pa-6 border-bottom">
+            <MudText Typo="Typo.h6" Color="Color.Primary">Settings</MudText>
+        </div>
+
+        @* MENU ITEMS *@
+        <MudList T="string" SelectedValue="@activeSection" SelectionMode="SelectionMode.SingleSelection" Class="pa-2 mt-2">
+
+            <MudListItem OnClick="@(() => activeSection = "Profile")" Class="@GetActiveClass("Profile")">
+                <div class="d-flex align-center gap-3">
+                    <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" />
+                    <MudText>Profile</MudText>
+                </div>
+            </MudListItem>
+
+            <MudListItem OnClick="@(() => activeSection = "Email")" Class="@GetActiveClass("Email")">
+                <div class="d-flex align-center gap-3">
+                    <MudIcon Icon="@Icons.Material.Filled.Email" Size="Size.Small" />
+                    <MudText>Email</MudText>
+                </div>
+            </MudListItem>
+
+            <MudListItem OnClick="@(() => activeSection = "Password")" Class="@GetActiveClass("Password")">
+                <div class="d-flex align-center gap-3">
+                    <MudIcon Icon="@Icons.Material.Filled.Lock" Size="Size.Small" />
+                    <MudText>Password</MudText>
+                </div>
+            </MudListItem>
+
+            <MudListItem OnClick="@(() => activeSection = "2FA")" Class="@GetActiveClass("2FA")">
+                <div class="d-flex align-center gap-3">
+                    <MudIcon Icon="@Icons.Material.Filled.Security" Size="Size.Small" />
+                    <MudText>Two-Factor Auth</MudText>
+                </div>
+            </MudListItem>
+
+            <MudListItem OnClick="@(() => activeSection = "PersonalData")" Class="@GetActiveClass("PersonalData")">
+                <div class="d-flex align-center gap-3">
+                    <MudIcon Icon="@Icons.Material.Filled.DeleteForever" Size="Size.Small" />
+                    <MudText>Personal Data</MudText>
+                </div>
+            </MudListItem>
+        </MudList>
+
+        <MudSpacer />
+
+        @* BACK BUTTON *@
+        <div class="pa-4 border-top">
+            <MudButton StartIcon="@Icons.Material.Filled.ArrowBack" Color="Color.Default" Link="/" FullWidth="true" Variant="Variant.Text">
+                Back to Dashboard
+            </MudButton>
+        </div>
+    </div>
+
+    @* --- RIGHT CONTENT AREA (Fills Remaining Space) --- *@
+    <div class="flex-grow-1" style="overflow-y: auto; background-color: white;">
+
+        @* Inner Container to center content slightly and limit width *@
+        <MudContainer MaxWidth="MaxWidth.Medium" Class="py-12 px-8">
+
+            @if (!string.IsNullOrEmpty(statusMessage))
+            {
+                <MudAlert Severity="Severity.Success" Variant="Variant.Filled" Class="mb-6" ShowCloseIcon="true">
+                    @statusMessage
+                </MudAlert>
+            }
+
+            @switch (activeSection)
+            {
+                case "Profile":
+                    <MudText Typo="Typo.h5" Class="mb-1">Public Profile</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-6 text-muted">Manage your public profile information.</MudText>
+                    <MudDivider Class="mb-8" />
+
+                    <EditForm Model="ProfileInput" FormName="profile" OnValidSubmit="OnProfileValidSubmitAsync" method="post">
+                        <DataAnnotationsValidator />
+
+                        <div class="d-flex align-center gap-6 mb-8">
+                            <MudAvatar Size="Size.Large" Color="Color.Primary" Style="height:90px; width:90px; font-size:2.5rem;">
+                                @(username?.FirstOrDefault().ToString().ToUpper() ?? "U")
+                            </MudAvatar>
+                            <div>
+                                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Filled.CloudUpload">Change Avatar</MudButton>
+                                <MudText Typo="Typo.caption" Class="d-block mt-2 text-muted">JPG or PNG. Max 5MB.</MudText>
+                            </div>
+                        </div>
+
+                        <MudGrid Spacing="4">
+                            <MudItem xs="12" md="6">
+                                <MudTextField Value="@username" Label="Username" Variant="Variant.Outlined" ReadOnly="true" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Lock" FullWidth="true" />
+                            </MudItem>
+                            <MudItem xs="12" md="6">
+                                <MudTextField @bind-Value="ProfileInput.PhoneNumber"
+                                              Label="Phone number"
+                                              Variant="Variant.Outlined"
+                                              InputType="InputType.Telephone"
+                                              For="@(() => ProfileInput.PhoneNumber)"
+                                              FullWidth="true"
+                                              ShrinkLabel="true" />  @* <--- ADD THIS *@
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudTextField T="string" Label="Bio" Variant="Variant.Outlined" Lines="4" Placeholder="Tell us a little about yourself..." FullWidth="true" />
+                            </MudItem>
+                        </MudGrid>
+
+                        <div class="d-flex justify-end mt-8">
+                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" Class="px-8">Save Changes</MudButton>
+                        </div>
+                    </EditForm>
+                    break;
+
+                case "Email":
+                    <MudText Typo="Typo.h5" Class="mb-1">Email Settings</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-6 text-muted">Manage your registered email address.</MudText>
+                    <MudDivider Class="mb-8" />
+
+                    @if (!isEmailConfirmed)
+                    {
+                        <MudAlert Severity="Severity.Warning" Class="mb-6">Your email is not confirmed.</MudAlert>
+                        <form @onsubmit="OnSendEmailVerificationAsync" id="send-verification-form" method="post" class="mb-4">
+                            <AntiforgeryToken />
+                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Text" Color="Color.Primary">Resend Verification Email</MudButton>
+                        </form>
+                    }
+
+                    <EditForm Model="EmailInput" FormName="email" OnValidSubmit="OnEmailValidSubmitAsync" method="post">
+                        <DataAnnotationsValidator />
+                        <MudGrid Spacing="4">
+                            <MudItem xs="12">
+                                <MudTextField Value="@email" Label="Current Email" Variant="Variant.Filled" ReadOnly="true" Disabled="true" FullWidth="true" />
+                            </MudItem>
+                            <MudItem xs="12">
+                                <MudTextField @bind-Value="EmailInput.NewEmail" Label="New Email" Variant="Variant.Outlined" InputType="InputType.Email" For="@(() => EmailInput.NewEmail)" FullWidth="true" Placeholder="Enter new email address" />
+                            </MudItem>
+                        </MudGrid>
+                        <div class="d-flex justify-end mt-8">
+                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" Class="px-8">Update Email</MudButton>
+                        </div>
+                    </EditForm>
+                    break;
+
+                default:
+                    <div class="d-flex flex-column align-center justify-center mt-12">
+                        <MudIcon Icon="@Icons.Material.Filled.Construction" Size="Size.Large" Color="Color.Warning" Class="mb-4" />
+                        <MudText Typo="Typo.h5">Section Under Construction</MudText>
+                    </div>
+                    break;
+            }
+        </MudContainer>
     </div>
 </div>
 
 @code {
+    private string activeSection = "Profile";
+
     private ApplicationUser user = default!;
     private string? username;
     private string? phoneNumber;
+    private string? email;
+    private bool isEmailConfirmed;
+    private string? statusMessage;
 
-    [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
 
-    [SupplyParameterFromForm]
-    private InputModel Input { get; set; } = new();
+    [SupplyParameterFromForm(FormName = "profile")] private ProfileInputModel ProfileInput { get; set; } = new();
+    [SupplyParameterFromForm(FormName = "email")] private EmailInputModel EmailInput { get; set; } = new();
 
     protected override async Task OnInitializedAsync()
     {
         user = await UserAccessor.GetRequiredUserAsync(HttpContext);
         username = await UserManager.GetUserNameAsync(user);
         phoneNumber = await UserManager.GetPhoneNumberAsync(user);
+        email = await UserManager.GetEmailAsync(user);
+        isEmailConfirmed = await UserManager.IsEmailConfirmedAsync(user);
 
-        Input.PhoneNumber ??= phoneNumber;
-    }
-
-    private async Task OnValidSubmitAsync()
-    {
-        if (Input.PhoneNumber != phoneNumber)
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("statusMessage", out var msg))
         {
-            var setPhoneResult = await UserManager.SetPhoneNumberAsync(user, Input.PhoneNumber);
-            if (!setPhoneResult.Succeeded)
-            {
-                RedirectManager.RedirectToCurrentPageWithStatus("Error: Failed to set phone number.", HttpContext);
-            }
+            statusMessage = msg;
         }
 
+        ProfileInput.PhoneNumber ??= phoneNumber;
+        EmailInput.NewEmail ??= email;
+    }
+
+    private string GetActiveClass(string sectionName)
+    {
+        return activeSection == sectionName ? "mud-theme-primary-hover mud-primary-text" : "";
+    }
+
+    // --- LOGIC ---
+    private async Task OnProfileValidSubmitAsync()
+    {
+        if (ProfileInput.PhoneNumber != phoneNumber)
+        {
+            var result = await UserManager.SetPhoneNumberAsync(user, ProfileInput.PhoneNumber);
+            if (!result.Succeeded)
+            {
+                RedirectManager.RedirectToCurrentPageWithStatus("Error: Failed to set phone number.", HttpContext);
+                return;
+            }
+        }
         await SignInManager.RefreshSignInAsync(user);
         RedirectManager.RedirectToCurrentPageWithStatus("Your profile has been updated", HttpContext);
     }
 
-    private sealed class InputModel
+    private async Task OnEmailValidSubmitAsync()
     {
-        [Phone]
-        [Display(Name = "Phone number")]
-        public string? PhoneNumber { get; set; }
+        if (EmailInput.NewEmail is null || EmailInput.NewEmail == email)
+        {
+            statusMessage = "Your email is unchanged.";
+            return;
+        }
+        var userId = await UserManager.GetUserIdAsync(user);
+        var code = await UserManager.GenerateChangeEmailTokenAsync(user, EmailInput.NewEmail);
+        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+        var callbackUrl = NavigationManager.GetUriWithQueryParameters(
+            NavigationManager.ToAbsoluteUri("Account/ConfirmEmailChange").AbsoluteUri,
+            new Dictionary<string, object?> { ["userId"] = userId, ["email"] = EmailInput.NewEmail, ["code"] = code });
+
+        await EmailSender.SendConfirmationLinkAsync(user, EmailInput.NewEmail, HtmlEncoder.Default.Encode(callbackUrl));
+        RedirectManager.RedirectToCurrentPageWithStatus("Confirmation link sent. Please check your email.", HttpContext);
+    }
+
+    private async Task OnSendEmailVerificationAsync()
+    {
+        if (email is null) return;
+        var userId = await UserManager.GetUserIdAsync(user);
+        var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
+        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+        var callbackUrl = NavigationManager.GetUriWithQueryParameters(
+            NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
+            new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code });
+
+        await EmailSender.SendConfirmationLinkAsync(user, email, HtmlEncoder.Default.Encode(callbackUrl));
+        RedirectManager.RedirectToCurrentPageWithStatus("Verification email sent. Please check your email.", HttpContext);
+    }
+
+    private sealed class ProfileInputModel
+    {
+        [Phone][Display(Name = "Phone number")] public string? PhoneNumber { get; set; }
+    }
+    private sealed class EmailInputModel
+    {
+        [Required][EmailAddress][Display(Name = "New email")] public string? NewEmail { get; set; }
     }
 }

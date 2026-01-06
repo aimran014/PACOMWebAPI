@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PACOM.WebhookApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+93cd33bfe14f72ae379dc589bd4b4bf63ae58b92")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a2fb93741786395e23257725e4c2f984258d4030")]
 [assembly: System.Reflection.AssemblyProductAttribute("PACOM.WebhookApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PACOM.WebhookApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
