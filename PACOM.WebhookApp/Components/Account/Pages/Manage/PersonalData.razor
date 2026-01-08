@@ -1,27 +1,70 @@
 ﻿@page "/Account/Manage/PersonalData"
+@layout PACOM.WebhookApp.Components.Layout.AccountLayout
 
 @inject IdentityUserAccessor UserAccessor
 
 <PageTitle>Personal Data</PageTitle>
 
-<StatusMessage />
-<h3>Personal Data</h3>
+<MudText Typo="Typo.h5" Class="mb-1">Personal Data</MudText>
+<MudText Typo="Typo.body2" Class="text-muted mb-6">Manage your stored personal information.</MudText>
+<MudDivider Class="mb-8" />
 
-<div class="row">
-    <div class="col-md-6">
-        <p>Your account contains personal data that you have given us. This page allows you to download or delete that data.</p>
-        <p>
-            <strong>Deleting this data will permanently remove your account, and this cannot be recovered.</strong>
-        </p>
-        <form action="Account/Manage/DownloadPersonalData" method="post">
-            <AntiforgeryToken />
-            <button class="btn btn-primary" type="submit">Download</button>
-        </form>
-        <p>
-            <a href="Account/Manage/DeletePersonalData" class="btn btn-danger">Delete</a>
-        </p>
-    </div>
-</div>
+<StatusMessage />
+
+<MudText Typo="Typo.body1" Class="mb-6">
+    Your account contains personal data that you have given us. This page allows you to download or delete that data.
+</MudText>
+
+<MudGrid Spacing="4">
+
+    @* --- DOWNLOAD CARD --- *@
+    <MudItem xs="12" md="6">
+        <MudPaper Class="pa-6 d-flex flex-column gap-4" Outlined="true" Elevation="0">
+            <div class="d-flex align-center gap-3">
+                <MudIcon Icon="@Icons.Material.Filled.CloudDownload" Color="Color.Primary" Size="Size.Large" />
+                <MudText Typo="Typo.h6">Download Data</MudText>
+            </div>
+
+            <MudText Typo="Typo.body2" Class="flex-grow-1 text-muted">
+                Download a machine-readable JSON file containing all personal data associated with your account.
+            </MudText>
+
+            @* Form is required for the POST request to the download endpoint *@
+            <form action="Account/Manage/DownloadPersonalData" method="post">
+                <AntiforgeryToken />
+                <MudButton ButtonType="ButtonType.Submit"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           FullWidth="true"
+                           StartIcon="@Icons.Material.Filled.Download">
+                    Download
+                </MudButton>
+            </form>
+        </MudPaper>
+    </MudItem>
+
+    @* --- DELETE CARD --- *@
+    <MudItem xs="12" md="6">
+        <MudPaper Class="pa-6 d-flex flex-column gap-4" Outlined="true" Elevation="0" Style="border-color: var(--mud-palette-error); background-color: #fff5f5;">
+            <div class="d-flex align-center gap-3">
+                <MudIcon Icon="@Icons.Material.Filled.DeleteForever" Color="Color.Error" Size="Size.Large" />
+                <MudText Typo="Typo.h6" Color="Color.Error">Delete Account</MudText>
+            </div>
+
+            <MudText Typo="Typo.body2" Class="flex-grow-1" Color="Color.Error">
+                <strong>Warning:</strong> Deleting this data will permanently remove your account. This action cannot be recovered.
+            </MudText>
+
+            <MudButton Href="Account/Manage/DeletePersonalData"
+                       Variant="Variant.Filled"
+                       Color="Color.Error"
+                       FullWidth="true"
+                       StartIcon="@Icons.Material.Filled.Delete">
+                Delete Data & Account
+            </MudButton>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
 
 @code {
     [CascadingParameter]

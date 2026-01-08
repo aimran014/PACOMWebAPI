@@ -1,4 +1,5 @@
 ﻿@page "/Account/Manage/Email"
+@layout PACOM.WebhookApp.Components.Layout.AccountLayout
 
 @using System.ComponentModel.DataAnnotations
 @using System.Text
@@ -12,55 +13,110 @@
 @inject IdentityUserAccessor UserAccessor
 @inject NavigationManager NavigationManager
 
-<PageTitle>Manage email</PageTitle>
+<PageTitle>Email Settings</PageTitle>
 
-<h3>Manage email</h3>
+<MudText Typo="Typo.h5" Class="mb-1">Email Settings</MudText>
+<MudText Typo="Typo.body2" Class="text-muted mb-6">Manage your primary email address and verification status.</MudText>
+<MudDivider Class="mb-8" />
 
-<StatusMessage Message="@message"/>
-<div class="row">
-    <div class="col-xl-6">
-        <form @onsubmit="OnSendEmailVerificationAsync" @formname="send-verification" id="send-verification-form" method="post">
-            <AntiforgeryToken />
-        </form>
-        <EditForm Model="Input" FormName="change-email" OnValidSubmit="OnValidSubmitAsync" method="post">
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
+@* --- STATUS MESSAGE (Feedback from Redirects) --- *@
+@if (!string.IsNullOrEmpty(statusMessage))
+{
+    <MudAlert Severity="Severity.Success" Variant="Variant.Filled" Class="mb-6" ShowCloseIcon="true" CloseIconClicked="() => statusMessage = null">
+        @statusMessage
+    </MudAlert>
+}
+
+@* --- 1. VERIFICATION WARNING (Only visible if email is NOT confirmed) --- *@
+@if (!isEmailConfirmed)
+{
+    <MudAlert Severity="Severity.Warning" Class="mb-8" Icon="@Icons.Material.Filled.Warning" Variant="Variant.Outlined">
+        <div class="d-flex flex-column flex-sm-row align-center justify-space-between gap-4" style="width:100%">
+            <div>
+                <MudText Typo="Typo.subtitle2" Color="Color.Warning"><b>Action Required</b></MudText>
+                <MudText Typo="Typo.body2">Your email address <b>@email</b> is not yet verified.</MudText>
+            </div>
+
+            @* Separate Form for Verification Button *@
+            <form @onsubmit="OnSendEmailVerificationAsync" @formname="send-verification" method="post">
+                <AntiforgeryToken />
+                <MudButton ButtonType="ButtonType.Submit"
+                           Variant="Variant.Filled"
+                           Color="Color.Warning"
+                           Size="Size.Small"
+                           StartIcon="@Icons.Material.Filled.Send">
+                    Resend Verification
+                </MudButton>
+            </form>
+        </div>
+    </MudAlert>
+}
+
+@* --- 2. CHANGE EMAIL FORM --- *@
+<EditForm Model="Input" FormName="change-email" OnValidSubmit="OnValidSubmitAsync" method="post">
+    <DataAnnotationsValidator />
+
+    <MudGrid Spacing="3">
+
+        @* CURRENT EMAIL (Read Only) *@
+        <MudItem xs="12">
             @if (isEmailConfirmed)
             {
-                <div class="form-floating mb-3 input-group">
-                    <input type="text" value="@email" id="email" class="form-control" placeholder="Enter your email" disabled />
-                    <div class="input-group-append">
-                        <span class="h-100 input-group-text text-success font-weight-bold">✓</span>
-                    </div>
-                    <label for="email" class="form-label">Email</label>
-                </div>
+                <MudTextField Value="@email"
+                              Label="Current Email"
+                              Variant="Variant.Filled"
+                              ReadOnly="true"
+                              Disabled="true"
+                              Adornment="Adornment.End"
+                              AdornmentIcon="@Icons.Material.Filled.CheckCircle"
+                              AdornmentColor="Color.Success"
+                              HelperText="Your email is verified." />
             }
             else
             {
-                <div class="form-floating mb-3">
-                    <input type="text" value="@email" id="email" class="form-control" placeholder="Enter your email" disabled />
-                    <label for="email" class="form-label">Email</label>
-                    <button type="submit" class="btn btn-link" form="send-verification-form">Send verification email</button>
-                </div>
+                <MudTextField Value="@email"
+                              Label="Current Email"
+                              Variant="Variant.Filled"
+                              ReadOnly="true"
+                              Disabled="true"
+                              Adornment="Adornment.End"
+                              AdornmentIcon="@Icons.Material.Filled.Error"
+                              AdornmentColor="Color.Warning"
+                              HelperText="Pending verification." />
             }
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.NewEmail" id="Input.NewEmail" class="form-control" autocomplete="email" aria-required="true" placeholder="Enter a new email" />
-                <label for="Input.NewEmail" class="form-label">New email</label>
-                <ValidationMessage For="() => Input.NewEmail" class="text-danger" />
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Change email</button>
-        </EditForm>
+        </MudItem>
+
+        @* NEW EMAIL INPUT *@
+        <MudItem xs="12">
+            <MudTextField @bind-Value="Input.NewEmail"
+                          Label="New Email Address"
+                          Variant="Variant.Outlined"
+                          InputType="InputType.Email"
+                          For="@(() => Input.NewEmail)"
+                          Placeholder="name@example.com"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.AlternateEmail" />
+        </MudItem>
+    </MudGrid>
+
+    <div class="d-flex justify-end mt-8">
+        <MudButton ButtonType="ButtonType.Submit"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Size="Size.Large"
+                   Class="px-8">
+            Change Email
+        </MudButton>
     </div>
-</div>
+</EditForm>
 
 @code {
-    private string? message;
+    private string? statusMessage;
     private ApplicationUser user = default!;
     private string? email;
     private bool isEmailConfirmed;
 
-    [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
 
     [SupplyParameterFromForm(FormName = "change-email")]
     private InputModel Input { get; set; } = new();
@@ -72,45 +128,52 @@
         isEmailConfirmed = await UserManager.IsEmailConfirmedAsync(user);
 
         Input.NewEmail ??= email;
+
+        // Check URL for status message (e.g. after redirect)
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("statusMessage", out var msg))
+        {
+            statusMessage = msg;
+        }
     }
 
     private async Task OnValidSubmitAsync()
     {
         if (Input.NewEmail is null || Input.NewEmail == email)
         {
-            message = "Your email is unchanged.";
+            statusMessage = "Your email is unchanged.";
             return;
         }
 
         var userId = await UserManager.GetUserIdAsync(user);
         var code = await UserManager.GenerateChangeEmailTokenAsync(user, Input.NewEmail);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
         var callbackUrl = NavigationManager.GetUriWithQueryParameters(
             NavigationManager.ToAbsoluteUri("Account/ConfirmEmailChange").AbsoluteUri,
             new Dictionary<string, object?> { ["userId"] = userId, ["email"] = Input.NewEmail, ["code"] = code });
 
         await EmailSender.SendConfirmationLinkAsync(user, Input.NewEmail, HtmlEncoder.Default.Encode(callbackUrl));
 
-        message = "Confirmation link to change email sent. Please check your email.";
+        // Use NavigationManager to reload the page with a success message
+        statusMessage = "Confirmation link sent. Please check your inbox.";
     }
 
     private async Task OnSendEmailVerificationAsync()
     {
-        if (email is null)
-        {
-            return;
-        }
+        if (email is null) return;
 
         var userId = await UserManager.GetUserIdAsync(user);
         var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+
         var callbackUrl = NavigationManager.GetUriWithQueryParameters(
             NavigationManager.ToAbsoluteUri("Account/ConfirmEmail").AbsoluteUri,
             new Dictionary<string, object?> { ["userId"] = userId, ["code"] = code });
 
         await EmailSender.SendConfirmationLinkAsync(user, email, HtmlEncoder.Default.Encode(callbackUrl));
 
-        message = "Verification email sent. Please check your email.";
+        statusMessage = "Verification email sent. Please check your inbox.";
     }
 
     private sealed class InputModel

@@ -1,14 +1,65 @@
 ﻿@inherits LayoutComponentBase
+@* 1. REMOVED the reference to MainLayout to stop the stacking *@
+@* @layout PACOM.WebhookApp.Components.Layout.MainLayout *@ 
 
+@inject NavigationManager NavigationManager
+
+@* 2. ADDED Providers: Since we removed MainLayout, we need these for MudBlazor components to work here *@
 <MudThemeProvider />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
+@* 3. WRAPPED in MudLayout: This creates the full-page structure *@
 <MudLayout>
-    @* REMOVED: background-color: #f0f2f5 *@
-    @* ADDED: pa-0 (padding: 0) to ensure edges touch the screen *@
-    <MudMainContent Class="pa-0" Style="height: 100vh; width: 100vw; overflow: hidden; background-color: white;">
-        @Body
+    <MudMainContent Class="pa-0" Style="height: 100vh; overflow-y: auto; background-color: #f9f9f9;">
+
+        <MudContainer MaxWidth="MaxWidth.Large" Class="py-8">
+
+            @* --- HEADER & BACK BUTTON --- *@
+            <div class="d-flex align-center justify-space-between mb-6">
+                <div>
+                    <MudText Typo="Typo.h4" Style="font-weight: 500;">Account Settings</MudText>
+                    <MudText Typo="Typo.body1" Class="text-muted">Manage your profile and security preferences</MudText>
+                </div>
+
+                <MudButton StartIcon="@Icons.Material.Filled.ArrowBack"
+                           Variant="Variant.Outlined"
+                           Color="Color.Secondary"
+                           Href="/">
+                    Back to Dashboard
+                </MudButton>
+            </div>
+
+            <MudGrid>
+                @* --- SHARED SIDEBAR --- *@
+                <MudItem xs="12" md="3">
+                    <MudPaper Elevation="0" Class="pa-2 rounded-lg" Outlined="true" Style="background-color: white;">
+                        <MudNavMenu Color="Color.Primary" Bordered="true">
+
+                            <MudText Typo="Typo.overline" Class="pa-4" Color="Color.Primary"><b>General</b></MudText>
+
+                            <MudNavLink Href="/Account/Manage" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Person">Profile</MudNavLink>
+                            <MudNavLink Href="/Account/Manage/Email" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Email">Email</MudNavLink>
+
+                            <MudText Typo="Typo.overline" Class="pa-4 mt-2" Color="Color.Primary"><b>Security</b></MudText>
+
+                            <MudNavLink Href="/Account/Manage/ChangePassword" Icon="@Icons.Material.Filled.Lock">Password</MudNavLink>
+                            <MudNavLink Href="/Account/Manage/TwoFactorAuthentication" Icon="@Icons.Material.Filled.Security">Two-Factor Auth</MudNavLink>
+                            <MudNavLink Href="/Account/Manage/PersonalData" Icon="@Icons.Material.Filled.DeleteForever">Personal Data</MudNavLink>
+
+                        </MudNavMenu>
+                    </MudPaper>
+                </MudItem>
+
+                @* --- CONTENT INJECTION POINT --- *@
+                <MudItem xs="12" md="9">
+                    <MudPaper Elevation="0" Class="pa-8 rounded-lg" Outlined="true" Style="min-height: 500px; background-color: white;">
+                        @Body
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+
+        </MudContainer>
     </MudMainContent>
 </MudLayout>

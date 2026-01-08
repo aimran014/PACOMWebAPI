@@ -66,6 +66,18 @@
                                           RequiredError="Email is required!"
                                           InputType="InputType.Email" />
 
+                            @* --- NEW: EMAIL VERIFICATION TOGGLE --- *@
+                            <div class="d-flex align-center mt-1 pa-2 rounded" style="border: 1px solid #e0e0e0;">
+                                <MudCheckBox @bind-Value="user.EmailConfirmed"
+                                             Label="@(user.EmailConfirmed ? "Email Verified" : "Email Unverified")"
+                                             Color="Color.Success"
+                                             UnCheckedColor="Color.Error"
+                                             CheckedIcon="@Icons.Material.Filled.Verified"
+                                             UncheckedIcon="@Icons.Material.Outlined.GppBad"
+                                             Dense="true" />
+                            </div>
+                            @* ------------------------------------- *@
+
                             <MudAlert Severity="Severity.Warning" Variant="Variant.Text" Dense="true" Class="mt-2">
                                 Changing these fields may require the user to re-login.
                             </MudAlert>
@@ -159,6 +171,7 @@
     // Backup original values to detect changes
     string originalEmail = "";
     string originalUserName = "";
+    bool originalEmailConfirmed; // Track verification status
 
     protected override async Task OnInitializedAsync()
     {
@@ -170,6 +183,7 @@
             // Capture original values
             originalEmail = user.Email;
             originalUserName = user.UserName;
+            originalEmailConfirmed = user.EmailConfirmed;
 
             // Load Roles
             allRoles = RoleManager.Roles.ToList();
@@ -197,11 +211,15 @@
 
         try
         {
-            // 1. Update Basic Profile Info (Email/Username)
+            // 1. Update Basic Profile Info (Email/Username/Verification)
             // Only update if they actually changed to save DB calls
-            if (user.Email != originalEmail || user.UserName != originalUserName)
+            bool profileChanged = user.Email != originalEmail ||
+                                  user.UserName != originalUserName ||
+                                  user.EmailConfirmed != originalEmailConfirmed;
+
+            if (profileChanged)
             {
-                // This updates the user entity in the DB
+                // This updates the user entity in the DB (including EmailConfirmed)
                 var updateResult = await UserManager.UpdateAsync(user);
 
                 if (!updateResult.Succeeded)
@@ -211,6 +229,11 @@
                     isSaving = false;
                     return; // Stop here if profile update fails
                 }
+
+                // Update trackers so we don't save again if user clicks save twice
+                originalEmail = user.Email;
+                originalUserName = user.UserName;
+                originalEmailConfirmed = user.EmailConfirmed;
             }
 
             // 2. Update Roles
@@ -249,7 +272,7 @@
                 Action = "Update User",
                 UserName = user.UserName ?? "System",
                 Timestamp = DateTime.UtcNow,
-                Details = $"Updated Profile/Roles for user {user.UserName}"
+                Details = $"Updated Profile/Roles for user {user.UserName}. Email Verified: {user.EmailConfirmed}"
             });
 
             Snackbar.Add("User updated successfully.", Severity.Success);

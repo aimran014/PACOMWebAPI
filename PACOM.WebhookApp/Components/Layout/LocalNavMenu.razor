@@ -38,14 +38,6 @@
 
         <Authorized Context="auth">
 
-            <MudNavGroup Title="@auth.User.Identity?.Name" Icon="@Icons.Material.Filled.AccountCircle" Expanded="false">
-                <MudNavLink Href="#" Icon="@Icons.Material.Filled.Person" IconColor="Color.Primary">Profile</MudNavLink>
-                <MudNavLink Href="#" Icon="@Icons.Material.Filled.Email" IconColor="Color.Success">Email</MudNavLink>
-                <MudNavLink Href="#" Icon="@Icons.Material.Filled.Key" IconColor="Color.Info">Password</MudNavLink>
-                <MudNavLink Href="#" Icon="@Icons.Material.Filled.VerifiedUser" IconColor="Color.Info">Two-Factor Authentication</MudNavLink>
-                <MudNavLink Href="#" Icon="@Icons.Material.Filled.FolderShared" IconColor="Color.Info">Personal Data</MudNavLink>
-            </MudNavGroup>
-
             <AuthorizeView Roles="Admin">
                 <MudNavLink Href="Users/Users" Icon="@Icons.Material.Filled.Group">
                     Users Manager
@@ -58,10 +50,6 @@
 
             <MudNavLink Href="Events/Event" Icon="@Icons.Material.Filled.Business">
                 Events
-            </MudNavLink>
-
-            <MudNavLink Href="Events/TransactionEvent" Icon="@Icons.Material.Filled.Business">
-                Transaction
             </MudNavLink>
 
             <AuthorizeView Roles="Admin">

@@ -2,8 +2,136 @@
 @using Microsoft.AspNetCore.Authorization
 @attribute [Authorize]
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Dashboard</PageTitle>
 
-<h1>Hello, world!</h1>
+@* CHANGED: 'py-12' (large padding) -> 'mt-4' (small top margin) to reduce the gap *@
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-4 px-8">
 
-Welcome to your new app.
+    @* --- WELCOME HEADER --- *@
+    <div class="mb-8">
+        <MudText Typo="Typo.h3" Color="Color.Primary" Class="mb-2"><b>Welcome to Webhook Manager</b></MudText>
+        <MudText Typo="Typo.h6" Class="text-muted">Select a module to manage your system.</MudText>
+    </div>
+
+    @* --- BIG CARD GRID (2 Columns per row) --- *@
+    <MudGrid Spacing="6">
+
+        @* 1. USERS MANAGER *@
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="3" Class="h-100 py-4 px-4 hover-card rounded-xl">
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large" Class="pa-4" Style="width:64px; height:64px;">
+                            <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" />
+                        </MudAvatar>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h5" Class="mt-2"><b>Users Manager</b></MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudText Typo="Typo.body1" Class="text-muted mb-4">
+                        Manage system administrators, user roles, permissions, and account statuses across the platform.
+                    </MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" EndIcon="@Icons.Material.Filled.ArrowForward" Href="Users/Users" FullWidth="true" Class="py-3">
+                        Manage Users
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        @* 2. TENANTS MANAGER *@
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="3" Class="h-100 py-4 px-4 hover-card rounded-xl">
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudAvatar Color="Color.Secondary" Variant="Variant.Filled" Size="Size.Large" Class="pa-4" Style="width:64px; height:64px;">
+                            <MudIcon Icon="@Icons.Material.Filled.Apartment" Size="Size.Large" />
+                        </MudAvatar>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h5" Class="mt-2"><b>Tenants Manager</b></MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudText Typo="Typo.body1" Class="text-muted mb-4">
+                        Configure multi-tenant environments, manage client organizations, and handle subscription settings.
+                    </MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Filled" Color="Color.Secondary" Size="Size.Large" EndIcon="@Icons.Material.Filled.ArrowForward" Href="Tenant/Tenants" FullWidth="true" Class="py-3">
+                        Manage Tenants
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        @* 3. EVENTS *@
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="3" Class="h-100 py-4 px-4 hover-card rounded-xl">
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudAvatar Color="Color.Info" Variant="Variant.Filled" Size="Size.Large" Class="pa-4" Style="width:64px; height:64px;">
+                            <MudIcon Icon="@Icons.Material.Filled.EventNote" Size="Size.Large" />
+                        </MudAvatar>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h5" Class="mt-2"><b>Events</b></MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudText Typo="Typo.body1" Class="text-muted mb-4">
+                        View comprehensive webhook logs, monitor delivery history, and track real-time system events.
+                    </MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Filled" Color="Color.Info" Size="Size.Large" EndIcon="@Icons.Material.Filled.ArrowForward" Href="Events/Event" FullWidth="true" Class="py-3">
+                        View Events
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+        @* 4. SETTINGS *@
+        <MudItem xs="12" md="6">
+            <MudCard Elevation="3" Class="h-100 py-4 px-4 hover-card rounded-xl">
+                <MudCardHeader>
+                    <CardHeaderAvatar>
+                        <MudAvatar Color="Color.Surface" Variant="Variant.Filled" Size="Size.Large" Class="pa-4" Style="width:64px; height:64px; border: 1px solid #ddd;">
+                            <MudIcon Icon="@Icons.Material.Filled.Settings" Size="Size.Large" Color="Color.Dark" />
+                        </MudAvatar>
+                    </CardHeaderAvatar>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h5" Class="mt-2"><b>Settings</b></MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudText Typo="Typo.body1" Class="text-muted mb-4">
+                        Configure your personal profile, update security preferences, and manage application settings.
+                    </MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Dark" Size="Size.Large" EndIcon="@Icons.Material.Filled.ArrowForward" Href="/Account/Manage" FullWidth="true" Class="py-3">
+                        Go to Settings
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+
+    </MudGrid>
+</MudContainer>
+
+<style>
+    .hover-card {
+        transition: all 0.3s ease;
+        border: 1px solid transparent;
+    }
+
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 12px 24px rgba(0,0,0,0.15) !important;
+            border-color: var(--mud-palette-primary);
+        }
+</style>

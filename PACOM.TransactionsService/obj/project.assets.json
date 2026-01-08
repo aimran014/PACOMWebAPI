@@ -10272,9 +10272,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\User\\source\\repos\\PACOMWebAPILatestOne\\PACOM.TransactionsService\\PACOM.TransactionsService.csproj",
+      "projectUniqueName": "C:\\Users\\User\\Source\\Repos\\PACOMWebAPILatestOne\\PACOM.TransactionsService\\PACOM.TransactionsService.csproj",
       "projectName": "PACOM.TransactionsService",
-      "projectPath": "C:\\Users\\User\\source\\repos\\PACOMWebAPILatestOne\\PACOM.TransactionsService\\PACOM.TransactionsService.csproj",
+      "projectPath": "C:\\Users\\User\\Source\\Repos\\PACOMWebAPILatestOne\\PACOM.TransactionsService\\PACOM.TransactionsService.csproj",
       "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\User\\source\\repos\\PACOMWebAPILatestOne\\PACOM.TransactionsService\\obj\\",
       "projectStyle": "PackageReference",
@@ -10298,8 +10298,8 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "C:\\Users\\User\\source\\repos\\PACOMWebAPILatestOne\\PACOM.WebhookApp\\PACOM.WebhookApp.csproj": {
-              "projectPath": "C:\\Users\\User\\source\\repos\\PACOMWebAPILatestOne\\PACOM.WebhookApp\\PACOM.WebhookApp.csproj"
+            "C:\\Users\\User\\Source\\Repos\\PACOMWebAPILatestOne\\PACOM.WebhookApp\\PACOM.WebhookApp.csproj": {
+              "projectPath": "C:\\Users\\User\\Source\\Repos\\PACOMWebAPILatestOne\\PACOM.WebhookApp\\PACOM.WebhookApp.csproj"
             }
           }
         }

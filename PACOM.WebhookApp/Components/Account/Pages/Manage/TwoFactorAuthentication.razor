@@ -1,4 +1,5 @@
 ﻿@page "/Account/Manage/TwoFactorAuthentication"
+@layout PACOM.WebhookApp.Components.Layout.AccountLayout
 
 @using Microsoft.AspNetCore.Http.Features
 @using Microsoft.AspNetCore.Identity
@@ -8,66 +9,118 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inject IdentityUserAccessor UserAccessor
 @inject IdentityRedirectManager RedirectManager
+@inject NavigationManager NavigationManager
 
 <PageTitle>Two-factor authentication (2FA)</PageTitle>
 
-<StatusMessage />
-<h3>Two-factor authentication (2FA)</h3>
+<MudText Typo="Typo.h5" Class="mb-1">Two-Factor Authentication</MudText>
+<MudText Typo="Typo.body2" Class="text-muted mb-6">Add an extra layer of security to your account.</MudText>
+<MudDivider Class="mb-8" />
+
+@* --- STATUS MESSAGE --- *@
+@if (!string.IsNullOrEmpty(statusMessage))
+{
+    <MudAlert Severity="Severity.Success" Variant="Variant.Filled" Class="mb-6" ShowCloseIcon="true" CloseIconClicked="() => statusMessage = null">
+        @statusMessage
+    </MudAlert>
+}
+
 @if (canTrack)
 {
-    if (is2faEnabled)
+    @if (is2faEnabled)
     {
-        if (recoveryCodesLeft == 0)
-        {
-            <div class="alert alert-danger">
-                <strong>You have no recovery codes left.</strong>
-                <p>You must <a href="Account/Manage/GenerateRecoveryCodes">generate a new set of recovery codes</a> before you can log in with a recovery code.</p>
+        // --- SECTION 1: 2FA IS ACTIVE ---
+        <div class="mb-8">
+            <div class="d-flex align-center gap-2 mb-4">
+                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" />
+                <MudText Typo="Typo.h6">2FA is currently <b>Enabled</b></MudText>
             </div>
-        }
-        else if (recoveryCodesLeft == 1)
-        {
-            <div class="alert alert-danger">
-                <strong>You have 1 recovery code left.</strong>
-                <p>You can <a href="Account/Manage/GenerateRecoveryCodes">generate a new set of recovery codes</a>.</p>
+
+            @* RECOVERY CODES WARNINGS *@
+            @if (recoveryCodesLeft == 0)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4" Icon="@Icons.Material.Filled.Error">
+                    <MudText><b>You have no recovery codes left.</b></MudText>
+                    <MudText Typo="Typo.body2">You must generate a new set of recovery codes before you can log in with a recovery code.</MudText>
+                    <MudButton Href="Account/Manage/GenerateRecoveryCodes" Variant="Variant.Filled" Color="Color.Error" Size="Size.Small" Class="mt-2">Generate new codes</MudButton>
+                </MudAlert>
+            }
+            else if (recoveryCodesLeft == 1)
+            {
+                <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-4" Icon="@Icons.Material.Filled.Warning">
+                    <MudText><b>You have 1 recovery code left.</b></MudText>
+                    <MudButton Href="Account/Manage/GenerateRecoveryCodes" Variant="Variant.Text" Color="Color.Error" Size="Size.Small">Generate new codes</MudButton>
+                </MudAlert>
+            }
+            else if (recoveryCodesLeft <= 3)
+            {
+                <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-4">
+                    <MudText><b>You have @recoveryCodesLeft recovery codes left.</b></MudText>
+                    <MudButton Href="Account/Manage/GenerateRecoveryCodes" Variant="Variant.Text" Color="Color.Warning" Size="Size.Small">Generate new codes</MudButton>
+                </MudAlert>
+            }
+
+            @* ACTION BUTTONS *@
+            <div class="d-flex flex-wrap gap-4 mt-6">
+                @if (isMachineRemembered)
+                {
+                    <form @formname="forget-browser" @onsubmit="OnSubmitForgetBrowserAsync" method="post">
+                        <AntiforgeryToken />
+                        <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.DesktopAccessDisabled">
+                            Forget this browser
+                        </MudButton>
+                    </form>
+                }
+
+                <MudButton Href="Account/Manage/Disable2fa" Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.GppBad">
+                    Disable 2FA
+                </MudButton>
+
+                <MudButton Href="Account/Manage/GenerateRecoveryCodes" Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Refresh">
+                    Reset recovery codes
+                </MudButton>
             </div>
-        }
-        else if (recoveryCodesLeft <= 3)
-        {
-            <div class="alert alert-warning">
-                <strong>You have @recoveryCodesLeft recovery codes left.</strong>
-                <p>You should <a href="Account/Manage/GenerateRecoveryCodes">generate a new set of recovery codes</a>.</p>
-            </div>
-        }
-
-        if (isMachineRemembered)
-        {
-            <form style="display: inline-block" @formname="forget-browser" @onsubmit="OnSubmitForgetBrowserAsync" method="post">
-                <AntiforgeryToken />
-                <button type="submit" class="btn btn-primary">Forget this browser</button>
-            </form>
-        }
-
-        <a href="Account/Manage/Disable2fa" class="btn btn-primary">Disable 2FA</a>
-        <a href="Account/Manage/GenerateRecoveryCodes" class="btn btn-primary">Reset recovery codes</a>
-    }
-
-    <h4>Authenticator app</h4>
-    @if (!hasAuthenticator)
-    {
-        <a href="Account/Manage/EnableAuthenticator" class="btn btn-primary">Add authenticator app</a>
+        </div>
     }
     else
     {
-        <a href="Account/Manage/EnableAuthenticator" class="btn btn-primary">Set up authenticator app</a>
-        <a href="Account/Manage/ResetAuthenticator" class="btn btn-primary">Reset authenticator app</a>
+        // --- SECTION 1: 2FA IS DISABLED ---
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Class="mb-8" Icon="@Icons.Material.Filled.Security">
+            You do not have two-factor authentication enabled. Enabling it adds significant security to your account.
+        </MudAlert>
+    }
+
+    <MudDivider Class="my-8" />
+
+    // --- SECTION 2: AUTHENTICATOR APP CONFIG ---
+    <MudText Typo="Typo.h6" Class="mb-4">Authenticator App</MudText>
+
+    @if (!hasAuthenticator)
+    {
+        <MudButton Href="Account/Manage/EnableAuthenticator" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.QrCodeScanner">
+            Add authenticator app
+        </MudButton>
+    }
+    else
+    {
+        <div class="d-flex gap-4">
+            <MudButton Href="Account/Manage/EnableAuthenticator" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Settings">
+                Set up authenticator app
+            </MudButton>
+
+            <MudButton Href="Account/Manage/ResetAuthenticator" Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.Restore">
+                Reset authenticator app
+            </MudButton>
+        </div>
     }
 }
 else
 {
-    <div class="alert alert-danger">
-        <strong>Privacy and cookie policy have not been accepted.</strong>
-        <p>You must accept the policy before you can enable two factor authentication.</p>
-    </div>
+    // --- SECTION 3: CONSENT REQUIRED ---
+    <MudAlert Severity="Severity.Error" Variant="Variant.Filled" Icon="@Icons.Material.Filled.Cookie">
+        <MudText><b>Privacy and cookie policy have not been accepted.</b></MudText>
+        <MudText Typo="Typo.body2">You must accept the policy before you can enable two factor authentication.</MudText>
+    </MudAlert>
 }
 
 @code {
@@ -76,6 +129,7 @@ else
     private int recoveryCodesLeft;
     private bool is2faEnabled;
     private bool isMachineRemembered;
+    private string? statusMessage;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -88,6 +142,13 @@ else
         is2faEnabled = await UserManager.GetTwoFactorEnabledAsync(user);
         isMachineRemembered = await SignInManager.IsTwoFactorClientRememberedAsync(user);
         recoveryCodesLeft = await UserManager.CountRecoveryCodesAsync(user);
+
+        // Check URL for status message
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        if (Microsoft.AspNetCore.WebUtilities.QueryHelpers.ParseQuery(uri.Query).TryGetValue("statusMessage", out var msg))
+        {
+            statusMessage = msg;
+        }
     }
 
     private async Task OnSubmitForgetBrowserAsync()

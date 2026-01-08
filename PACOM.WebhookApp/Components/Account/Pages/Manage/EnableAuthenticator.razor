@@ -1,4 +1,5 @@
 ﻿@page "/Account/Manage/EnableAuthenticator"
+@layout PACOM.WebhookApp.Components.Layout.AccountLayout
 
 @using System.ComponentModel.DataAnnotations
 @using System.Globalization
@@ -13,7 +14,7 @@
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<EnableAuthenticator> Logger
 
-<PageTitle>Configure authenticator app</PageTitle>
+<PageTitle>Configure Authenticator</PageTitle>
 
 @if (recoveryCodes is not null)
 {
@@ -21,49 +22,103 @@
 }
 else
 {
+    <MudText Typo="Typo.h5" Class="mb-1">Configure Authenticator App</MudText>
+    <MudText Typo="Typo.body2" Class="text-muted mb-6">Follow the steps below to secure your account.</MudText>
+    <MudDivider Class="mb-8" />
+
     <StatusMessage Message="@message" />
-    <h3>Configure authenticator app</h3>
-    <div>
-        <p>To use an authenticator app go through the following steps:</p>
-        <ol class="list">
-            <li>
-                <p>
-                    Download a two-factor authenticator app like Microsoft Authenticator for
-                    <a href="https://go.microsoft.com/fwlink/?Linkid=825072">Android</a> and
-                    <a href="https://go.microsoft.com/fwlink/?Linkid=825073">iOS</a> or
-                    Google Authenticator for
-                    <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en">Android</a> and
-                    <a href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8">iOS</a>.
-                </p>
-            </li>
-            <li>
-                <p>Scan the QR Code or enter this key <kbd>@sharedKey</kbd> into your two factor authenticator app. Spaces and casing do not matter.</p>
-                <div class="alert alert-info">Learn how to <a href="https://go.microsoft.com/fwlink/?Linkid=852423">enable QR code generation</a>.</div>
-                <div></div>
-                <div data-url="@authenticatorUri"></div>
-            </li>
-            <li>
-                <p>
-                    Once you have scanned the QR code or input the key above, your two factor authentication app will provide you
-                    with a unique code. Enter the code in the confirmation box below.
-                </p>
-                <div class="row">
-                    <div class="col-xl-6">
-                        <EditForm Model="Input" FormName="send-code" OnValidSubmit="OnValidSubmitAsync" method="post">
-                            <DataAnnotationsValidator />
-                            <div class="form-floating mb-3">
-                                <InputText @bind-Value="Input.Code" id="Input.Code" class="form-control" autocomplete="off" placeholder="Enter the code" />
-                                <label for="Input.Code" class="control-label form-label">Verification Code</label>
-                                <ValidationMessage For="() => Input.Code" class="text-danger" />
-                            </div>
-                            <button type="submit" class="w-100 btn btn-lg btn-primary">Verify</button>
-                            <ValidationSummary class="text-danger" role="alert" />
-                        </EditForm>
+
+    <MudGrid Spacing="4">
+
+        @* --- STEP 1: DOWNLOAD APP --- *@
+        <MudItem xs="12">
+            <MudText Typo="Typo.h6" Color="Color.Primary" Class="mb-2">1. Download an App</MudText>
+            <MudText Typo="Typo.body2" Class="mb-4">
+                Download a two-factor authenticator app like Microsoft Authenticator or Google Authenticator.
+            </MudText>
+
+            <div class="d-flex gap-4 flex-wrap">
+                <MudButton Variant="Variant.Outlined"
+                           StartIcon="@Icons.Custom.Brands.Microsoft"
+                           Href="https://go.microsoft.com/fwlink/?Linkid=825072"
+                           Target="_blank"
+                           Color="Color.Info">
+                    Microsoft Auth (Android)
+                </MudButton>
+                <MudButton Variant="Variant.Outlined"
+                           StartIcon="@Icons.Custom.Brands.Apple"
+                           Href="https://go.microsoft.com/fwlink/?Linkid=825073"
+                           Target="_blank"
+                           Color="Color.Info">
+                    Microsoft Auth (iOS)
+                </MudButton>
+            </div>
+        </MudItem>
+
+        @* --- STEP 2: SCAN QR CODE --- *@
+        <MudItem xs="12">
+            <MudText Typo="Typo.h6" Color="Color.Primary" Class="mb-2">2. Scan QR Code</MudText>
+            <MudText Typo="Typo.body2" Class="mb-4">
+                Scan the QR Code below or manually enter the key into your app.
+            </MudText>
+
+            <MudPaper Class="pa-6 d-flex flex-column flex-sm-row gap-8 align-center" Elevation="0" Outlined="true" Style="background-color: #f9f9f9;">
+
+                @* QR CODE CONTAINER *@
+                <div class="d-flex flex-column align-center">
+                    <div style="background: white; padding: 10px; border: 1px solid #ddd; width: 170px; height: 170px; display: flex; align-items: center; justify-content: center;">
+                        @* This div is where your JS library renders the QR Code *@
+                        <div id="qrCode" data-url="@authenticatorUri"></div>
                     </div>
+                    <MudText Typo="Typo.caption" Class="mt-2 text-muted">Scan this code</MudText>
                 </div>
-            </li>
-        </ol>
-    </div>
+
+                @* MANUAL KEY DISPLAY *@
+                <div style="flex: 1;">
+                    <MudText Typo="Typo.subtitle2" Class="mb-1">Cannot scan the code?</MudText>
+                    <MudText Typo="Typo.body2" Class="mb-3">Enter this key manually into your app:</MudText>
+
+                    <MudPaper Elevation="0" Class="pa-3 rounded mud-theme-dark mb-2" Style="font-family: monospace; letter-spacing: 1px; font-weight: bold; text-align: center;">
+                        @sharedKey
+                    </MudPaper>
+
+                    <MudAlert Severity="Severity.Info" Dense="true" Class="mt-2">Spaces and casing do not matter.</MudAlert>
+                </div>
+            </MudPaper>
+        </MudItem>
+
+        @* --- STEP 3: VERIFY --- *@
+        <MudItem xs="12" md="8" lg="6">
+            <MudText Typo="Typo.h6" Color="Color.Primary" Class="mb-2">3. Verify Setup</MudText>
+            <MudText Typo="Typo.body2" Class="mb-4">
+                Enter the 6-digit code provided by your app to confirm setup.
+            </MudText>
+
+            <EditForm Model="Input" FormName="send-code" OnValidSubmit="OnValidSubmitAsync" method="post">
+                <DataAnnotationsValidator />
+
+                <MudTextField @bind-Value="Input.Code"
+                              Label="Verification Code"
+                              Variant="Variant.Outlined"
+                              Placeholder="123456"
+                              MaxLength="7"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.LockClock"
+                              Class="mb-4"
+                              For="@(() => Input.Code)" />
+
+                <MudButton ButtonType="ButtonType.Submit"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           Size="Size.Large"
+                           FullWidth="true">
+                    Verify & Enable
+                </MudButton>
+
+                <ValidationSummary class="mud-alert-text-danger mt-2" />
+            </EditForm>
+        </MudItem>
+    </MudGrid>
 }
 
 @code {
@@ -84,7 +139,6 @@ else
     protected override async Task OnInitializedAsync()
     {
         user = await UserAccessor.GetRequiredUserAsync(HttpContext);
-
         await LoadSharedKeyAndQrCodeUriAsync(user);
     }
 
@@ -120,7 +174,6 @@ else
 
     private async ValueTask LoadSharedKeyAndQrCodeUriAsync(ApplicationUser user)
     {
-        // Load the authenticator key & QR code URI to display on the form
         var unformattedKey = await UserManager.GetAuthenticatorKeyAsync(user);
         if (string.IsNullOrEmpty(unformattedKey))
         {
@@ -156,7 +209,7 @@ else
         return string.Format(
             CultureInfo.InvariantCulture,
             AuthenticatorUriFormat,
-            UrlEncoder.Encode("Microsoft.AspNetCore.Identity.UI"),
+            UrlEncoder.Encode("PACOM.WebhookApp"), // Customized Issuer Name
             UrlEncoder.Encode(email),
             unformattedKey);
     }

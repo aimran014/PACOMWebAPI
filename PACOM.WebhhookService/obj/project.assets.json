@@ -10271,9 +10271,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\User\\source\\repos\\PACOMWebAPILatestOne\\PACOM.WebhhookService\\PACOM.WebhhookService.csproj",
+      "projectUniqueName": "C:\\Users\\User\\Source\\Repos\\PACOMWebAPILatestOne\\PACOM.WebhhookService\\PACOM.WebhhookService.csproj",
       "projectName": "PACOM.WebhhookService",
-      "projectPath": "C:\\Users\\User\\source\\repos\\PACOMWebAPILatestOne\\PACOM.WebhhookService\\PACOM.WebhhookService.csproj",
+      "projectPath": "C:\\Users\\User\\Source\\Repos\\PACOMWebAPILatestOne\\PACOM.WebhhookService\\PACOM.WebhhookService.csproj",
       "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\User\\source\\repos\\PACOMWebAPILatestOne\\PACOM.WebhhookService\\obj\\",
       "projectStyle": "PackageReference",
@@ -10297,8 +10297,8 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "C:\\Users\\User\\source\\repos\\PACOMWebAPILatestOne\\PACOM.WebhookApp\\PACOM.WebhookApp.csproj": {
-              "projectPath": "C:\\Users\\User\\source\\repos\\PACOMWebAPILatestOne\\PACOM.WebhookApp\\PACOM.WebhookApp.csproj"
+            "C:\\Users\\User\\Source\\Repos\\PACOMWebAPILatestOne\\PACOM.WebhookApp\\PACOM.WebhookApp.csproj": {
+              "projectPath": "C:\\Users\\User\\Source\\Repos\\PACOMWebAPILatestOne\\PACOM.WebhookApp\\PACOM.WebhookApp.csproj"
             }
           }
         }
