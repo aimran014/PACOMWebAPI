@@ -7,6 +7,7 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 @inject IdentityRedirectManager RedirectManager
+@inject NavigationManager NavigationManager
 @inject ILogger<LoginWithRecoveryCode> Logger
 
 <PageTitle>Recovery code verification</PageTitle>
@@ -14,28 +15,41 @@
 <h1>Recovery code verification</h1>
 <hr />
 <StatusMessage Message="@message" />
-<p>
-    You have requested to log in with a recovery code. This login will not be remembered until you provide
-    an authenticator app code at log in or disable 2FA and log in again.
-</p>
-<div class="row">
-    <div class="col-md-4">
-        <EditForm Model="Input" FormName="login-with-recovery-code" OnValidSubmit="OnValidSubmitAsync" method="post">
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" role="alert" />
-            <div class="form-floating mb-3">
-                <InputText @bind-Value="Input.RecoveryCode" id="Input.RecoveryCode" class="form-control" autocomplete="off" placeholder="RecoveryCode" />
-                <label for="Input.RecoveryCode" class="form-label">Recovery Code</label>
-                <ValidationMessage For="() => Input.RecoveryCode" class="text-danger" />
-            </div>
-            <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
-        </EditForm>
+
+@if (user == null)
+{
+    <div class="alert alert-warning" role="alert">
+        <h4 class="alert-heading">Session Expired</h4>
+        <p>Your two-factor authentication session has expired or was not found. Please log in again.</p>
+        <hr>
+        <p class="mb-0">Redirecting to login page...</p>
     </div>
-</div>
+}
+else
+{
+    <p>
+        You have requested to log in with a recovery code. This login will not be remembered until you provide
+        an authenticator app code at log in or disable 2FA and log in again.
+    </p>
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm Model="Input" FormName="login-with-recovery-code" OnValidSubmit="OnValidSubmitAsync" method="post">
+                <DataAnnotationsValidator />
+                <ValidationSummary class="text-danger" role="alert" />
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.RecoveryCode" id="Input.RecoveryCode" class="form-control" autocomplete="off" placeholder="RecoveryCode" />
+                    <label for="Input.RecoveryCode" class="form-label">Recovery Code</label>
+                    <ValidationMessage For="() => Input.RecoveryCode" class="text-danger" />
+                </div>
+                <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+            </EditForm>
+        </div>
+    </div>
+}
 
 @code {
     private string? message;
-    private ApplicationUser user = default!;
+    private ApplicationUser? user;
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
@@ -45,13 +59,40 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Ensure the user has gone through the username & password screen first
-        user = await SignInManager.GetTwoFactorAuthenticationUserAsync() ??
-            throw new InvalidOperationException("Unable to load two-factor authentication user.");
+        // Try to load the two-factor authentication user from the session
+        user = await SignInManager.GetTwoFactorAuthenticationUserAsync();
+
+        if (user == null)
+        {
+            // Log the issue for debugging
+            Logger.LogWarning("Unable to load two-factor authentication user. User may have navigated directly to this page or session expired.");
+            
+            // Set error message
+            message = "Error: Your two-factor authentication session has expired. Please log in again.";
+            
+            // Redirect back to login page after a short delay
+            await Task.Delay(3000); // 3 second delay to show the message
+            
+            var loginUrl = NavigationManager.GetUriWithQueryParameters(
+                "Account/Login",
+                new Dictionary<string, object?> { ["ReturnUrl"] = ReturnUrl }
+            );
+            
+            NavigationManager.NavigateTo(loginUrl, forceLoad: true);
+        }
     }
 
     private async Task OnValidSubmitAsync()
     {
+        // Double-check user is still available
+        if (user == null)
+        {
+            message = "Error: Session expired. Please log in again.";
+            await Task.Delay(2000);
+            NavigationManager.NavigateTo("Account/Login", forceLoad: true);
+            return;
+        }
+
         var recoveryCode = Input.RecoveryCode.Replace(" ", string.Empty);
 
         var result = await SignInManager.TwoFactorRecoveryCodeSignInAsync(recoveryCode);

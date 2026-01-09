@@ -19,6 +19,8 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.11" />
     <PackageReference Include="MudBlazor" Version="8.15.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+    <PackageReference Include="QRCoder" Version="1.7.0" />
+    <PackageReference Include="QuestPDF" Version="2025.12.1" />
   </ItemGroup>
 
 </Project>

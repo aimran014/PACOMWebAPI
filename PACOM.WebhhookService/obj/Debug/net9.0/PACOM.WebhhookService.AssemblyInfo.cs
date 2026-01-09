@@ -15,7 +15,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("PACOM.WebhhookService")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4ed4bb8705de7a808ef68b44de6f7fc437af6c85")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c3f4313c7aa198fe73cfceca760d8500e3ec22a5")]
 [assembly: System.Reflection.AssemblyProductAttribute("PACOM.WebhhookService")]
 [assembly: System.Reflection.AssemblyTitleAttribute("PACOM.WebhhookService")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -1,5 +1,6 @@
 ﻿@page "/"
 @using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
 @attribute [Authorize]
 
 <PageTitle>Dashboard</PageTitle>
@@ -16,31 +17,33 @@
     @* --- BIG CARD GRID (2 Columns per row) --- *@
     <MudGrid Spacing="6">
 
-        @* 1. USERS MANAGER *@
-        <MudItem xs="12" md="6">
-            <MudCard Elevation="3" Class="h-100 py-4 px-4 hover-card rounded-xl">
-                <MudCardHeader>
-                    <CardHeaderAvatar>
-                        <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large" Class="pa-4" Style="width:64px; height:64px;">
-                            <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" />
-                        </MudAvatar>
-                    </CardHeaderAvatar>
-                    <CardHeaderContent>
-                        <MudText Typo="Typo.h5" Class="mt-2"><b>Users Manager</b></MudText>
-                    </CardHeaderContent>
-                </MudCardHeader>
-                <MudCardContent>
-                    <MudText Typo="Typo.body1" Class="text-muted mb-4">
-                        Manage system administrators, user roles, permissions, and account statuses across the platform.
-                    </MudText>
-                </MudCardContent>
-                <MudCardActions>
-                    <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" EndIcon="@Icons.Material.Filled.ArrowForward" Href="Users/Users" FullWidth="true" Class="py-3">
-                        Manage Users
-                    </MudButton>
-                </MudCardActions>
-            </MudCard>
-        </MudItem>
+        @* 1. USERS MANAGER - WRAPPED IN AUTHORIZE VIEW *@
+        <AuthorizeView Roles="Admin">
+            <MudItem xs="12" md="6">
+                <MudCard Elevation="3" Class="h-100 py-4 px-4 hover-card rounded-xl">
+                    <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudAvatar Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large" Class="pa-4" Style="width:64px; height:64px;">
+                                <MudIcon Icon="@Icons.Material.Filled.People" Size="Size.Large" />
+                            </MudAvatar>
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h5" Class="mt-2"><b>Users Manager</b></MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudText Typo="Typo.body1" Class="text-muted mb-4">
+                            Manage system administrators, user roles, permissions, and account statuses across the platform.
+                        </MudText>
+                    </MudCardContent>
+                    <MudCardActions>
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" EndIcon="@Icons.Material.Filled.ArrowForward" Href="Users/Users" FullWidth="true" Class="py-3">
+                            Manage Users
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        </AuthorizeView>
 
         @* 2. TENANTS MANAGER *@
         <MudItem xs="12" md="6">

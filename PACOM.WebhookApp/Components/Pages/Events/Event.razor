@@ -17,6 +17,7 @@
 @inject IJSRuntime JS
 @inject DatasourcesService DatasourceService
 @inject ExcelExportService ExcelExportService
+@inject PdfExportService PdfExportService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject ApplicationDbContext Db
 
@@ -105,11 +106,17 @@
             <MudDivider Vertical="true" FlexItem="true" Class="mx-4 my-2" />
 
             <MudTooltip Text="Export Excel">
-                <MudIconButton Icon="@Icons.Custom.FileFormats.FileExcel" Color="Color.Success" OnClick="ExportExcel" />
+                <MudIconButton Icon="@Icons.Custom.FileFormats.FileExcel" 
+                               Color="Color.Success" 
+                               OnClick="ExportExcel"
+                               Disabled="@(EventLogs == null || !EventLogs.Any())" />
             </MudTooltip>
 
-            <MudTooltip Text="Export PDF (Disabled)">
-                <MudIconButton Icon="@Icons.Custom.FileFormats.FilePdf" Color="Color.Default" Disabled="true" />
+            <MudTooltip Text="Export PDF">
+                <MudIconButton Icon="@Icons.Custom.FileFormats.FilePdf" 
+                               Color="Color.Error" 
+                               OnClick="ExportPdf"
+                               Disabled="@(EventLogs == null || !EventLogs.Any())" />
             </MudTooltip>
         </ToolBarContent>
 
@@ -254,15 +261,12 @@
         StateHasChanged();
     }
 
-    // --- EXCEL EXPORT (Updated with Missing Fields) ---
+    // --- EXCEL EXPORT ---
     private async Task ExportExcel()
     {
         if (EventLogs == null || !EventLogs.Any())
             return;
 
-        // NOTE: Your ExcelExportService.ExportTransactionEvents method
-        // will likely need to map these fields internally if it wasn't already.
-        // The service receives the entire list of ActivityEvent objects.
         var bytes = ExcelExportService.ExportTransactionEvents(EventLogs);
 
         var fileName = $"EventLogs_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
@@ -271,6 +275,24 @@
             "downloadFile",
             fileName,
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            Convert.ToBase64String(bytes)
+        );
+    }
+
+    // --- PDF EXPORT ---
+    private async Task ExportPdf()
+    {
+        if (EventLogs == null || !EventLogs.Any())
+            return;
+
+        var bytes = PdfExportService.ExportTransactionEventsToPdf(EventLogs);
+
+        var fileName = $"EventLogs_{DateTime.Now:yyyyMMdd_HHmmss}.pdf";
+
+        await JS.InvokeVoidAsync(
+            "downloadFile",
+            fileName,
+            "application/pdf",
             Convert.ToBase64String(bytes)
         );
     }

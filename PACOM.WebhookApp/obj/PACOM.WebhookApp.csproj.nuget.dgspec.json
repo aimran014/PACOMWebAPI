@@ -87,6 +87,14 @@
               "target": "Package",
               "version": "[13.0.4, )"
             },
+            "QRCoder": {
+              "target": "Package",
+              "version": "[1.7.0, )"
+            },
+            "QuestPDF": {
+              "target": "Package",
+              "version": "[2025.12.1, )"
+            },
             "itext7": {
               "target": "Package",
               "version": "[9.4.0, )"

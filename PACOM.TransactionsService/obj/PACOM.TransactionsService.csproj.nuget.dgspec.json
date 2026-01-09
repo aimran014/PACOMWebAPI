@@ -11,7 +11,7 @@
         "projectName": "PACOM.TransactionsService",
         "projectPath": "C:\\Users\\User\\Source\\Repos\\PACOMWebAPILatestOne\\PACOM.TransactionsService\\PACOM.TransactionsService.csproj",
         "packagesPath": "C:\\Users\\User\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\User\\Source\\Repos\\PACOMWebAPILatestOne\\PACOM.TransactionsService\\obj\\",
+        "outputPath": "C:\\Users\\User\\source\\repos\\PACOMWebAPILatestOne\\PACOM.TransactionsService\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -166,6 +166,14 @@
             "Newtonsoft.Json": {
               "target": "Package",
               "version": "[13.0.4, )"
+            },
+            "QRCoder": {
+              "target": "Package",
+              "version": "[1.7.0, )"
+            },
+            "QuestPDF": {
+              "target": "Package",
+              "version": "[2025.12.1, )"
             },
             "itext7": {
               "target": "Package",
